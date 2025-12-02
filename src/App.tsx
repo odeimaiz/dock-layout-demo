@@ -1,12 +1,51 @@
 import { useState } from "react";
 import { DockviewReact } from "dockview-react";
-import type { DockviewReadyEvent, IDockviewPanel, IDockviewPanelProps } from "dockview-react";
+import type { DockviewApi, DockviewReadyEvent, IDockviewPanel, IDockviewPanelProps } from "dockview-react";
 import "dockview-react/dist/styles/dockview.css";
 import { dockviewStore } from "./dockviewStore";
 
 // ─────────────────────────────────────────────
 // Panel components
 // ─────────────────────────────────────────────
+
+const addExplorerPanel = (api: DockviewApi) => {
+  api.addPanel({
+    id: "explorer",
+    component: "explorer",
+    title: "Explorer",
+  });
+}
+
+const addControllerGroupPanel = (api: DockviewApi) => {
+  api.addPanel({
+    id: "controllergroup",
+    component: "controllergroup",
+    title: "Controller",
+    position: { referencePanel: "explorer", direction: "right" }
+  });
+}
+
+const addMultiTreePanel = (api: DockviewApi) => {
+  api.addPanel({
+    id: "multitree",
+    component: "multitree",
+    title: "Multi Tree",
+    position: { referencePanel: "controllergroup", direction: "right" }
+  });
+}
+
+const addView3DPanel = (api: DockviewApi) => {
+  api.addPanel({
+    id: "view3d",
+    component: "view3d",
+    title: "3D View",
+    position: {
+      // referencePanel: "multitree",
+      referencePanel: "controllergroup",
+      direction: "right",
+    },
+  });
+}
 
 const ExplorerPanel = () => {
 
@@ -17,16 +56,10 @@ const ExplorerPanel = () => {
     if (dockviewStore.showController) {
       const panel = api.panels.find((p: IDockviewPanel) => p.id === "controllergroup");
       if (panel) api.removePanel(panel);
-      dockviewStore.setShowController(false);
     } else {
-      api.addPanel({
-        id: "controllergroup",
-        component: "controllergroup",
-        title: "Controller",
-        position: { referencePanel: "explorer", direction: "right" }
-      });
-      dockviewStore.setShowController(true);
+      addControllerGroupPanel(api);
     }
+    dockviewStore.setShowController(!dockviewStore.showController);
   };
 
   const toggleMultiTree = () => {
@@ -36,16 +69,10 @@ const ExplorerPanel = () => {
     if (dockviewStore.showMultiTree) {
       const panel = api.panels.find((p: IDockviewPanel) => p.id === "multitree");
       if (panel) api.removePanel(panel);
-      dockviewStore.setShowMultiTree(false);
     } else {
-      api.addPanel({
-        id: "multitree",
-        component: "multitree",
-        title: "Multi Tree",
-        position: { referencePanel: "controllergroup", direction: "right" }
-      });
-      dockviewStore.setShowMultiTree(true);
+      addMultiTreePanel(api);
     }
+    dockviewStore.setShowMultiTree(!dockviewStore.showMultiTree);
   };
 
   return (
@@ -139,47 +166,17 @@ export default function App() {
     dockviewStore.api = api;
 
     // Explorer
-    api.addPanel({
-      id: "explorer",
-      component: "explorer",
-      title: "Explorer",
-    });
+    addExplorerPanel(api);
 
     // ControllerGroup
-    api.addPanel({
-      id: "controllergroup",
-      component: "controllergroup",
-      title: "Controller",
-      position: {
-        referencePanel: "explorer",
-        direction: "right",
-      },
-    });
+    addControllerGroupPanel(api);
 
-    /* hidden on startup
     // Multi Tree
-    event.api.addPanel({
-      id: "multitree",
-      component: "multitree",
-      title: "Multi Tree",
-      position: {
-        referencePanel: "controllergroup",
-        direction: "right"
-      }
-    });
-    */
+    // hidden on startup
+    // addMultiTreePanel(api);
 
     // 3D View
-    api.addPanel({
-      id: "view3d",
-      component: "view3d",
-      title: "3D View",
-      position: {
-        // referencePanel: "multitree",
-        referencePanel: "controllergroup",
-        direction: "right",
-      },
-    });
+    addView3DPanel(api);
 
     // Resize Explorer → 300
     const explorerPanel = api.panels.find((p: IDockviewPanel) => p.id === "controllergroup");
