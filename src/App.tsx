@@ -44,7 +44,7 @@ export default function App() {
       },
     });
 
-    // Controller
+    // Options
     event.api.addPanel({
       id: "options",
       component: "default",
