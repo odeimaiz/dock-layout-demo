@@ -2,14 +2,15 @@ import { useState } from "react";
 import { DockviewReact } from "dockview-react";
 import "dockview-react/dist/styles/dockview.css";
 
-// ─────────────────────────────────────────────────────────────
-// Panel Components
-// ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// Panel components
+// ─────────────────────────────────────────────
 
 const ExplorerPanel = () => {
   return (
     <div style={{ padding: 10, color: "white" }}>
-      <p>This is Explorer content</p>
+      <h3>Explorer</h3>
+      <p>This is the Explorer panel.</p>
     </div>
   );
 };
@@ -19,36 +20,45 @@ const ControllerGroupPanel = () => {
   const [dragging, setDragging] = useState(false);
 
   const onMouseDown = () => setDragging(true);
-  const onMouseMove = (e: any) => {
+  const onMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!dragging) return;
-    const newHeight = Math.max(80, Math.min(400, e.clientY - 50)); // subtract navbar height
+    // Vertical split: Controller (top) / Options (bottom)
+    const newHeight = Math.max(80, Math.min(400, e.clientY - 70)); // 70px navbar
     setTopHeight(newHeight);
   };
   const onMouseUp = () => setDragging(false);
 
   return (
     <div
-      style={{ height: "100%", display: "flex", flexDirection: "column", color: "white" }}
+      style={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        color: "white",
+      }}
       onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}
     >
       {/* Controller (top) */}
       <div style={{ height: topHeight, padding: 10 }}>
+        <h3>Controller</h3>
         <p>Controller area</p>
       </div>
 
-      {/* Horizontal Splitter */}
+      {/* Horizontal splitter inside controller group */}
       <div
         onMouseDown={onMouseDown}
         style={{
-          height: "6px",
+          height: 6,
           background: "#555",
-          cursor: "row-resize"
+          cursor: "row-resize",
+          userSelect: "none",
         }}
       />
 
       {/* Options (bottom) */}
       <div style={{ flex: 1, padding: 10 }}>
+        <h3>Options</h3>
         <p>Options area</p>
       </div>
     </div>
@@ -70,18 +80,16 @@ const View3DPanel = () => {
         padding: 10,
         height: "100%",
         background: "#111",
-        color: "white"
+        color: "white",
       }}
     >
       <h3>3D View</h3>
+      <p>This is where the 3D scene will go.</p>
     </div>
   );
 };
 
-// ─────────────────────────────────────────────────────────────
-// App Layout
-// ─────────────────────────────────────────────────────────────
-
+// Map IDs to components for Dockview
 const components = {
   explorer: ExplorerPanel,
   controllergroup: ControllerGroupPanel,
@@ -90,36 +98,23 @@ const components = {
 };
 
 export default function App() {
-  const [explorerWidth, setExplorerWidth] = useState(220);
-  const [dragging, setDragging] = useState(false);
-
-  // Horizontal splitter for Explorer width
-  const onMouseDown = () => setDragging(true);
-  const onMouseMove = (e: any) => {
-    if (!dragging) return;
-    const newWidth = Math.max(150, Math.min(400, e.clientX));
-    setExplorerWidth(newWidth);
-  };
-  const onMouseUp = () => setDragging(false);
-
-  // Initialize Dockview layout
   const onReady = (event: any) => {
-    // Explorer panel (left)
+    // Left: Explorer
     event.api.addPanel({
       id: "explorer",
       component: "explorer",
-      title: "Explorer"
+      title: "Explorer",
     });
 
-    // ControllerGroup panel (middle)
+    // Middle: ControllerGroup
     event.api.addPanel({
       id: "controllergroup",
       component: "controllergroup",
       title: "Controller",
       position: {
         referencePanel: "explorer",
-        direction: "right"
-      }
+        direction: "right",
+      },
     });
 
     // Multi Tree (middle)
@@ -137,63 +132,61 @@ export default function App() {
     event.api.addPanel({
       id: "view3d",
       component: "view3d",
-      title: "",
+      title: "3D View",
       position: {
         referencePanel: "multitree",
-        direction: "right"
-      }
+        direction: "right",
+      },
     });
 
-    // Disable floating & close for 3D view header
-    // Also remove header entirely
-    // const panel3D = event.api.getPanel("view3d");
-    // panel3D?.api.setHeaderVisibility(false);
-    // panel3D?.api.setCanFloat(false);
-    // panel3D?.api.setCanClose(false);
+    // For now we leave the 3D View header & floating behavior as-is.
+    // We’ll hide/lock it later via CSS or proper config, not via non-existent methods.
   };
 
   return (
     <div
-      style={{ height: "100vh", width: "100vw", display: "flex", flexDirection: "column" }}
-      onMouseMove={onMouseMove}
-      onMouseUp={onMouseUp}
+      style={{
+        height: "100vh",
+        width: "100vw",
+        display: "flex",
+        flexDirection: "column",
+        background: "#111",
+      }}
     >
-      {/* Top NavBar */}
+      {/* Navbar */}
       <div
         style={{
-          height: "70px",
+          height: 70,
           background: "#1a1a1a",
           color: "white",
           display: "flex",
           alignItems: "center",
-          paddingLeft: "10px"
+          paddingLeft: 10,
+          borderBottom: "1px solid #333",
         }}
       >
         Navbar
       </div>
 
-      {/* Content row */}
-      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-        {/* Dockview region */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <DockviewReact
-            components={components}
-            onReady={onReady}
-            className="dockview-theme-dark"
-          />
-        </div>
+      {/* Middle: Dockview fills the whole row */}
+      <div style={{ flex: 1, minHeight: 0 }}>
+        <DockviewReact
+          components={components}
+          onReady={onReady}
+          className="dockview-theme-dark"
+        />
       </div>
 
       {/* Footer */}
       <div
         style={{
-          height: "30px",
+          height: 30,
           background: "#1a1a1a",
           color: "white",
           display: "flex",
           alignItems: "center",
-          paddingLeft: "10px",
-          borderTop: "1px solid #333"
+          paddingLeft: 10,
+          borderTop: "1px solid #333",
         }}
       >
         Footer
