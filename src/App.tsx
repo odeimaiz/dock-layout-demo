@@ -1,15 +1,13 @@
 import { useState } from "react";
 import { DockviewReact } from "dockview-react";
 import "dockview-react/dist/styles/dockview.css";
-import { useContext } from "react";
-import { DockviewApiContext } from "./DockviewContext";
 import { dockviewStore } from "./dockviewStore";
 
 // ─────────────────────────────────────────────
 // Panel components
 // ─────────────────────────────────────────────
 
-const ExplorerPanel = ({ showController, setShowController, showMultiTree, setShowMultiTree }: any) => {
+const ExplorerPanel = () => {
 
   const toggleController = () => {
     const api = dockviewStore.api;
@@ -143,13 +141,9 @@ const View3DPanel = () => {
 
 
 export default function App() {
-  const [dockviewApi, setDockviewApi] = useState<any>(null);
-
   const onReady = (event: any) => {
-    const api = event.api;       // ← IMPORTANT
+    const api = event.api;
     dockviewStore.api = api;
-
-    setDockviewApi(event.api);
 
     // Left: Explorer
     event.api.addPanel({
@@ -197,13 +191,13 @@ export default function App() {
     // Resize Explorer to 300px
     const explorerPanel = api.panels.find((p: any) => p.id === "explorer");
     if (explorerPanel) {
-      explorerPanel.group.api.setSize({ width: 350 });
+      explorerPanel.group.api.setSize({ width: 300 });
     }
 
     // Resize ControllerGroup to 300px
     const controllerPanel = api.panels.find((p: any) => p.id === "controllergroup");
     if (controllerPanel) {
-      controllerPanel.group.api.setSize({ width: 250 });
+      controllerPanel.group.api.setSize({ width: 300 });
     }
   };
 
