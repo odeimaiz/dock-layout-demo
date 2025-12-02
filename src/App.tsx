@@ -188,6 +188,12 @@ export default function App() {
     // Resize Controller → 300
     const controllerPanel = api.panels.find((p: IDockviewPanel) => p.id === "controllergroup");
     if (controllerPanel) controllerPanel.group.api.setSize({ width: 300 });
+
+    // Hide header 3D View's caption bar
+    const view3DPanel = api.panels.find((p: IDockviewPanel) => p.id === "view3d");
+    if (view3DPanel) {
+      view3DPanel.group.header.hidden = true;
+    }
   };
 
   return (
