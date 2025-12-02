@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DockviewReact } from "dockview-react";
 import type { DockviewApi, DockviewReadyEvent, IDockviewPanel, IDockviewPanelProps } from "dockview-react";
 import "dockview-react/dist/styles/dockview.css";
@@ -50,6 +50,16 @@ const addView3DPanel = (api: DockviewApi) => {
 }
 
 const ExplorerPanel = () => {
+  // Local “tick” just to force React to re-render
+  const [, setVersion] = useState(0);
+
+  useEffect(() => {
+    const unsubscribe = dockviewStore.subscribe(() => {
+      setVersion(v => v + 1); // 🔥 re-render ExplorerPanel
+    });
+
+    return unsubscribe;
+  }, []);
 
   const toggleController = () => {
     const api = dockviewStore.api;
