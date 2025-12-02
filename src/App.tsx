@@ -26,10 +26,33 @@ export default function App() {
   const onMouseUp = () => setDragging(false);
 
   const onReady = (event: any) => {
+    // Explorer
     event.api.addPanel({
-      id: "panel_1",
+      id: "explorer",
       component: "default",
-      title: "Panel 1",
+      title: "Explorer",
+    });
+
+    // Controller
+    event.api.addPanel({
+      id: "controller",
+      component: "default",
+      title: "Controller",
+      position: {
+        direction: "right", // place to the right of Explorer
+        referencePanel: "explorer",
+      },
+    });
+
+    // Controller
+    event.api.addPanel({
+      id: "options",
+      component: "default",
+      title: "Options",
+      position: {
+        direction: "below", // place below Controller
+        referencePanel: "controller",
+      },
     });
   };
 
@@ -44,29 +67,6 @@ export default function App() {
       onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}
     >
-      {/* Explorer */}
-      <div
-        style={{
-          width: explorerWidth,
-          background: "#2e2e2e",
-          color: "white",
-          padding: "10px",
-        }}
-      >
-        Explorer
-      </div>
-
-      {/* Splitter */}
-      <div
-        style={{
-          width: "6px",
-          cursor: "col-resize",
-          background: dragging ? "#666" : "#444",
-          userSelect: "none",
-        }}
-        onMouseDown={onMouseDown}
-      />
-
       {/* Dockview region */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <DockviewReact
