@@ -3,6 +3,8 @@ import { DockviewReact } from "dockview-react";
 import type { DockviewApi, DockviewReadyEvent, IDockviewPanel, IDockviewPanelProps } from "dockview-react";
 import "dockview-react/dist/styles/dockview.css";
 import { dockviewStore } from "./dockviewStore";
+import "./App.css";
+
 
 // ─────────────────────────────────────────────
 // Panel components
@@ -76,14 +78,39 @@ const ExplorerPanel = () => {
   };
 
   return (
-    <div style={{ padding: 10, color: "white" }}>
-      <h3>Explorer</h3>
+    <div style={{ height: "100%", display: "flex", flexDirection: "column", color: "white" }}>
+      
+      {/* Header */}
+      <div className="explorer-header">
+        <div>Explorer</div>
 
-      <button onClick={toggleController}>Toggle Controller</button>
+        <div className="explorer-buttons">
 
-      <br /><br />
+          <button
+            className={
+              "explorer-toggle" + (dockviewStore.showController ? " active" : "")
+            }
+            onClick={toggleController}
+          >
+            Ctrls
+          </button>
 
-      <button onClick={toggleMultiTree}>Toggle Multi Tree</button>
+          <button
+            className={
+              "explorer-toggle" + (dockviewStore.showMultiTree ? " active" : "")
+            }
+            onClick={toggleMultiTree}
+          >
+            Tree
+          </button>
+
+        </div>
+      </div>
+
+      {/* Body */}
+      <div style={{ padding: 10, overflow: "auto" }}>
+        {/* Optional: folder tree or content here */}
+      </div>
     </div>
   );
 };
