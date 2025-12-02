@@ -146,11 +146,10 @@ export default function App() {
   const [dockviewApi, setDockviewApi] = useState<any>(null);
 
   const onReady = (event: any) => {
-    console.log("DOCKVIEW READY", event.api);
+    const api = event.api;       // ← IMPORTANT
+    dockviewStore.api = api;
 
     setDockviewApi(event.api);
-    dockviewStore.api = event.api;
-    console.log("Dockview API set:", dockviewStore.api);
 
     // Left: Explorer
     event.api.addPanel({
@@ -170,6 +169,7 @@ export default function App() {
       },
     });
 
+    /* hidden on startup
     // Multi Tree (middle)
     event.api.addPanel({
       id: "multitree",
@@ -180,6 +180,7 @@ export default function App() {
         direction: "right"
       }
     });
+    */
 
     // 3D View panel (right)
     event.api.addPanel({
@@ -187,10 +188,23 @@ export default function App() {
       component: "view3d",
       title: "3D View",
       position: {
-        referencePanel: "multitree",
+        // referencePanel: "multitree",
+        referencePanel: "controllergroup",
         direction: "right",
       },
     });
+
+    // Resize Explorer to 300px
+    const explorerPanel = api.panels.find((p: any) => p.id === "explorer");
+    if (explorerPanel) {
+      explorerPanel.group.api.setSize({ width: 350 });
+    }
+
+    // Resize ControllerGroup to 300px
+    const controllerPanel = api.panels.find((p: any) => p.id === "controllergroup");
+    if (controllerPanel) {
+      controllerPanel.group.api.setSize({ width: 250 });
+    }
   };
 
   return (
