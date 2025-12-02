@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { DockviewReact } from "dockview-react";
-import type { DockviewReadyEvent, IDockviewPanel } from "dockview-react";
+import type { DockviewReadyEvent, IDockviewPanel, IDockviewPanelProps } from "dockview-react";
 import "dockview-react/dist/styles/dockview.css";
 import { dockviewStore } from "./dockviewStore";
 
@@ -122,6 +122,13 @@ const View3DPanel = () => (
   </div>
 );
 
+const components: Record<string, React.FC<IDockviewPanelProps>> = {
+  explorer: ExplorerPanel,
+  controllergroup: ControllerGroupPanel,
+  multitree: MultiTree,
+  view3d: View3DPanel,
+};
+
 // ─────────────────────────────────────────────
 // Main App
 // ─────────────────────────────────────────────
@@ -209,12 +216,7 @@ export default function App() {
 
       <div style={{ flex: 1, minHeight: 0 }}>
         <DockviewReact
-          components={{
-            explorer: ExplorerPanel,
-            controllergroup: ControllerGroupPanel,
-            multitree: MultiTree,
-            view3d: View3DPanel,
-          }}
+          components={components}
           onReady={onReady}
           className="dockview-theme-dark"
         />
