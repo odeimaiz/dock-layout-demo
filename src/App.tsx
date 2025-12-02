@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { DockviewReact } from "dockview-react";
+import type { DockviewReadyEvent, IDockviewPanel } from "dockview-react";
 import "dockview-react/dist/styles/dockview.css";
 import { dockviewStore } from "./dockviewStore";
 
@@ -14,7 +15,7 @@ const ExplorerPanel = () => {
     if (!api) return;
 
     if (dockviewStore.showController) {
-      const panel = api.panels.find((p: any) => p.id === "controllergroup");
+      const panel = api.panels.find((p: IDockviewPanel) => p.id === "controllergroup");
       if (panel) api.removePanel(panel);
       dockviewStore.setShowController(false);
     } else {
@@ -33,7 +34,7 @@ const ExplorerPanel = () => {
     if (!api) return;
 
     if (dockviewStore.showMultiTree) {
-      const panel = api.panels.find((p: any) => p.id === "multitree");
+      const panel = api.panels.find((p: IDockviewPanel) => p.id === "multitree");
       if (panel) api.removePanel(panel);
       dockviewStore.setShowMultiTree(false);
     } else {
@@ -126,7 +127,7 @@ const View3DPanel = () => (
 // ─────────────────────────────────────────────
 
 export default function App() {
-  const onReady = (event: any) => {
+  const onReady = (event: DockviewReadyEvent) => {
     const api = event.api;
     dockviewStore.api = api;
 
@@ -174,11 +175,11 @@ export default function App() {
     });
 
     // Resize Explorer → 300
-    const explorerPanel = api.panels.find((p: any) => p.id === "explorer");
+    const explorerPanel = api.panels.find((p: IDockviewPanel) => p.id === "controllergroup");
     if (explorerPanel) explorerPanel.group.api.setSize({ width: 300 });
 
     // Resize Controller → 300
-    const controllerPanel = api.panels.find((p: any) => p.id === "controllergroup");
+    const controllerPanel = api.panels.find((p: IDockviewPanel) => p.id === "controllergroup");
     if (controllerPanel) controllerPanel.group.api.setSize({ width: 300 });
   };
 
