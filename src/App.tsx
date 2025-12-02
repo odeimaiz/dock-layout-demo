@@ -51,31 +51,27 @@ const ExplorerPanel = () => {
     <div style={{ padding: 10, color: "white" }}>
       <h3>Explorer</h3>
 
-      <button onClick={toggleController}>
-        Toggle Controller
-      </button>
+      <button onClick={toggleController}>Toggle Controller</button>
 
       <br /><br />
 
-      <button onClick={toggleMultiTree}>
-        Toggle Multi Tree
-      </button>
+      <button onClick={toggleMultiTree}>Toggle Multi Tree</button>
     </div>
   );
 };
-
 
 const ControllerGroupPanel = () => {
   const [topHeight, setTopHeight] = useState(150);
   const [dragging, setDragging] = useState(false);
 
   const onMouseDown = () => setDragging(true);
+
   const onMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!dragging) return;
-    // Vertical split: Controller (top) / Options (bottom)
-    const newHeight = Math.max(80, Math.min(200, e.clientY - 70)); // 70px navbar
+    const newHeight = Math.max(80, Math.min(200, e.clientY - 70)); 
     setTopHeight(newHeight);
   };
+
   const onMouseUp = () => setDragging(false);
 
   return (
@@ -89,13 +85,11 @@ const ControllerGroupPanel = () => {
       onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}
     >
-      {/* Controller (top) */}
       <div style={{ height: topHeight, padding: 10 }}>
         <h3>Controller</h3>
         <p>Controller area</p>
       </div>
 
-      {/* Horizontal splitter inside controller group */}
       <div
         onMouseDown={onMouseDown}
         style={{
@@ -106,7 +100,6 @@ const ControllerGroupPanel = () => {
         }}
       />
 
-      {/* Options (bottom) */}
       <div style={{ flex: 1, padding: 10 }}>
         <h3>Options</h3>
         <p>Options area</p>
@@ -115,45 +108,37 @@ const ControllerGroupPanel = () => {
   );
 };
 
-const MultiTree = () => {
-  return (
-    <div style={{ padding: 10, color: "white" }}>
-      <p>This is Multi Tree content</p>
-    </div>
-  );
-};
+const MultiTree = () => (
+  <div style={{ padding: 10, color: "white" }}>
+    <p>This is Multi Tree content</p>
+  </div>
+);
 
-const View3DPanel = () => {
-  return (
-    <div
-      style={{
-        padding: 10,
-        height: "100%",
-        background: "#111",
-        color: "white",
-      }}
-    >
-      <h3>3D View</h3>
-      <p>This is where the 3D scene will go.</p>
-    </div>
-  );
-};
+const View3DPanel = () => (
+  <div style={{ padding: 10, height: "100%", background: "#111", color: "white" }}>
+    <h3>3D View</h3>
+    <p>This is where the 3D scene will go.</p>
+  </div>
+);
 
+// ─────────────────────────────────────────────
+// Main App
+// ─────────────────────────────────────────────
 
 export default function App() {
   const onReady = (event: any) => {
     const api = event.api;
     dockviewStore.api = api;
 
-    // Left: Explorer
-    event.api.addPanel({
+    // Explorer
+    api.addPanel({
       id: "explorer",
       component: "explorer",
       title: "Explorer",
     });
 
-    // Middle: ControllerGroup
-    event.api.addPanel({
+    // ControllerGroup
+    api.addPanel({
       id: "controllergroup",
       component: "controllergroup",
       title: "Controller",
@@ -164,7 +149,7 @@ export default function App() {
     });
 
     /* hidden on startup
-    // Multi Tree (middle)
+    // Multi Tree
     event.api.addPanel({
       id: "multitree",
       component: "multitree",
@@ -176,8 +161,8 @@ export default function App() {
     });
     */
 
-    // 3D View panel (right)
-    event.api.addPanel({
+    // 3D View
+    api.addPanel({
       id: "view3d",
       component: "view3d",
       title: "3D View",
@@ -188,17 +173,13 @@ export default function App() {
       },
     });
 
-    // Resize Explorer to 300px
+    // Resize Explorer → 300
     const explorerPanel = api.panels.find((p: any) => p.id === "explorer");
-    if (explorerPanel) {
-      explorerPanel.group.api.setSize({ width: 300 });
-    }
+    if (explorerPanel) explorerPanel.group.api.setSize({ width: 300 });
 
-    // Resize ControllerGroup to 300px
+    // Resize Controller → 300
     const controllerPanel = api.panels.find((p: any) => p.id === "controllergroup");
-    if (controllerPanel) {
-      controllerPanel.group.api.setSize({ width: 300 });
-    }
+    if (controllerPanel) controllerPanel.group.api.setSize({ width: 300 });
   };
 
   return (
@@ -211,7 +192,6 @@ export default function App() {
         background: "#111",
       }}
     >
-      {/* Navbar */}
       <div
         style={{
           height: 70,
@@ -226,21 +206,19 @@ export default function App() {
         Navbar
       </div>
 
-      {/* Middle: Dockview fills the whole row */}
       <div style={{ flex: 1, minHeight: 0 }}>
         <DockviewReact
           components={{
             explorer: ExplorerPanel,
             controllergroup: ControllerGroupPanel,
             multitree: MultiTree,
-            view3d: View3DPanel
+            view3d: View3DPanel,
           }}
           onReady={onReady}
           className="dockview-theme-dark"
         />
       </div>
 
-      {/* Footer */}
       <div
         style={{
           height: 30,
