@@ -1,19 +1,71 @@
 import { useState } from "react";
 import { DockviewReact } from "dockview-react";
 import "dockview-react/dist/styles/dockview.css";
+import { useContext } from "react";
+import { DockviewApiContext } from "./DockviewContext";
+import { dockviewStore } from "./dockviewStore";
 
 // ─────────────────────────────────────────────
 // Panel components
 // ─────────────────────────────────────────────
 
-const ExplorerPanel = () => {
+const ExplorerPanel = ({ showController, setShowController, showMultiTree, setShowMultiTree }: any) => {
+
+  const toggleController = () => {
+    const api = dockviewStore.api;
+    if (!api) return;
+
+    if (dockviewStore.showController) {
+      const panel = api.panels.find((p: any) => p.id === "controllergroup");
+      if (panel) api.removePanel(panel);
+      dockviewStore.setShowController(false);
+    } else {
+      api.addPanel({
+        id: "controllergroup",
+        component: "controllergroup",
+        title: "Controller",
+        position: { referencePanel: "explorer", direction: "right" }
+      });
+      dockviewStore.setShowController(true);
+    }
+  };
+
+  const toggleMultiTree = () => {
+    const api = dockviewStore.api;
+    if (!api) return;
+
+    if (dockviewStore.showMultiTree) {
+      const panel = api.panels.find((p: any) => p.id === "multitree");
+      if (panel) api.removePanel(panel);
+      dockviewStore.setShowMultiTree(false);
+    } else {
+      api.addPanel({
+        id: "multitree",
+        component: "multitree",
+        title: "Multi Tree",
+        position: { referencePanel: "controllergroup", direction: "right" }
+      });
+      dockviewStore.setShowMultiTree(true);
+    }
+  };
+
   return (
     <div style={{ padding: 10, color: "white" }}>
       <h3>Explorer</h3>
-      <p>This is the Explorer panel.</p>
+
+      <button onClick={toggleController}>
+        Toggle Controller
+      </button>
+
+      <br /><br />
+
+      <button onClick={toggleMultiTree}>
+        Toggle Multi Tree
+      </button>
     </div>
   );
 };
+
 
 const ControllerGroupPanel = () => {
   const [topHeight, setTopHeight] = useState(150);
@@ -23,7 +75,7 @@ const ControllerGroupPanel = () => {
   const onMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!dragging) return;
     // Vertical split: Controller (top) / Options (bottom)
-    const newHeight = Math.max(80, Math.min(400, e.clientY - 70)); // 70px navbar
+    const newHeight = Math.max(80, Math.min(200, e.clientY - 70)); // 70px navbar
     setTopHeight(newHeight);
   };
   const onMouseUp = () => setDragging(false);
@@ -89,16 +141,17 @@ const View3DPanel = () => {
   );
 };
 
-// Map IDs to components for Dockview
-const components = {
-  explorer: ExplorerPanel,
-  controllergroup: ControllerGroupPanel,
-  multitree: MultiTree,
-  view3d: View3DPanel
-};
 
 export default function App() {
+  const [dockviewApi, setDockviewApi] = useState<any>(null);
+
   const onReady = (event: any) => {
+    console.log("DOCKVIEW READY", event.api);
+
+    setDockviewApi(event.api);
+    dockviewStore.api = event.api;
+    console.log("Dockview API set:", dockviewStore.api);
+
     // Left: Explorer
     event.api.addPanel({
       id: "explorer",
@@ -138,9 +191,6 @@ export default function App() {
         direction: "right",
       },
     });
-
-    // For now we leave the 3D View header & floating behavior as-is.
-    // We’ll hide/lock it later via CSS or proper config, not via non-existent methods.
   };
 
   return (
@@ -171,7 +221,12 @@ export default function App() {
       {/* Middle: Dockview fills the whole row */}
       <div style={{ flex: 1, minHeight: 0 }}>
         <DockviewReact
-          components={components}
+          components={{
+            explorer: ExplorerPanel,
+            controllergroup: ControllerGroupPanel,
+            multitree: MultiTree,
+            view3d: View3DPanel
+          }}
           onReady={onReady}
           className="dockview-theme-dark"
         />
