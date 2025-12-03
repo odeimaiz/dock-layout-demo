@@ -112,10 +112,9 @@ const ExplorerPanel: React.FC<IDockviewPanelProps> = () => {
   const [, setVersion] = useState(0);
 
   useEffect(() => {
-    const unsub = dockviewStore.subscribe(() => {
+    return dockviewStore.subscribe(() => {
       setVersion(v => v + 1);
     });
-    return unsub;
   }, []);
 
   const toggleController = () => {
@@ -238,10 +237,9 @@ export default function App() {
   const [, setVersion] = useState(0);
 
   useEffect(() => {
-    const unsub = dockviewStore.subscribe(() => {
+    return dockviewStore.subscribe(() => {
       setVersion(v => v + 1);
     });
-    return unsub;
   }, []);
 
   const onReady = (event: DockviewReadyEvent) => {
