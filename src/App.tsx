@@ -5,58 +5,14 @@ import "dockview-react/dist/styles/dockview.css";
 import { dockviewStore } from "./dockviewStore";
 import "./App.css";
 
+function rebuildLayout(api: DockviewApi) {
+  // Remove everything
+  api.panels.forEach(p => api.removePanel(p));
 
-const initExplorerPanel = (api: DockviewApi) => {
   api.addPanel({
     id: "explorer",
     component: "explorer",
     title: "Explorer",
-  });
-}
-
-const initControllerPanel = (api: DockviewApi) => {
-  api.addPanel({
-    id: "controller",
-    component: "controller",
-    title: "Controller",
-    position: { referencePanel: "explorer", direction: "right" }
-  });
-}
-
-const initOptionsPanel = (api: DockviewApi) => {
-  api.addPanel({
-    id: "options",
-    component: "options",
-    title: "Options",
-    position: { referencePanel: "controller", direction: "below" }
-  });
-}
-
-const initMultiTreePanel = (api: DockviewApi) => {
-  api.addPanel({
-    id: "multitree",
-    component: "multitree",
-    title: "Multi Tree",
-    position: { referencePanel: "controller", direction: "right" }
-  });
-}
-
-const initView3DPanel = (api: DockviewApi) => {
-  api.addPanel({
-    id: "view3d",
-    component: "view3d",
-    title: "3D View",
-    position: {
-      referencePanel: "multitree",
-      direction: "right",
-    },
-  });
-}
-
-function rebuildLayout(api: DockviewApi) {
-  // Remove everything except Explorer
-  api.panels.forEach(p => {
-    if (p.id !== "explorer") api.removePanel(p);
   });
 
   let lastRight = "explorer"; // track where next panel attaches
@@ -219,12 +175,6 @@ export default function App() {
   const onReady = (event: DockviewReadyEvent) => {
     const api = event.api;
     dockviewStore.api = api;
-
-    initExplorerPanel(api);
-    initControllerPanel(api);
-    initMultiTreePanel(api);
-    initView3DPanel(api);
-    initOptionsPanel(api);
 
     rebuildLayout(api);
 
