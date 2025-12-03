@@ -154,7 +154,7 @@ const ExplorerPanel: React.FC<IDockviewPanelProps> = () => {
       </div>
 
       <div style={{ padding: 10, overflow: "auto" }}>
-        <p>Explorer content...</p>
+        Explorer content...
       </div>
     </div>
   );
@@ -163,7 +163,7 @@ const ExplorerPanel: React.FC<IDockviewPanelProps> = () => {
 const ControllerPanel: React.FC<IDockviewPanelProps> = () => {
   return (
     <div style={{ padding: 10, color: "white" }}>
-      <p>Controller content...</p>
+      Controller content...
     </div>
   );
 };
@@ -171,20 +171,20 @@ const ControllerPanel: React.FC<IDockviewPanelProps> = () => {
 const OptionsPanel: React.FC<IDockviewPanelProps> = () => {
   return (
     <div style={{ padding: 10, color: "white" }}>
-      <p>Options content...</p>
+      Options content...
     </div>
   );
 };
 
 const MultiTreePanel: React.FC<IDockviewPanelProps> = () => (
   <div style={{ padding: 10, color: "white" }}>
-    <p>This is Multi Tree content</p>
+    This is Multi Tree content
   </div>
 );
 
 const View3DPanel: React.FC<IDockviewPanelProps> = () => (
   <div style={{ padding: 10, height: "100%", background: "#111", color: "white" }}>
-    <p>This is where the 3D scene will go.</p>
+    This is where the 3D scene will go.
   </div>
 );
 
