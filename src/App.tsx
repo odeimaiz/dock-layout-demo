@@ -11,10 +11,11 @@ const getPanelById = (api: DockviewApi, id: string): IDockviewPanel | undefined 
   return api.panels.find((p: IDockviewPanel) => p.id === id);
 };
 
-const getPanelWidth = (api: DockviewApi, panelId: string, fallback = 300): number => {
+const getPanelWidth = (api: DockviewApi, panelId: string, fallback = 250): number => {
   const panel = getPanelById(api, panelId);
   if (!panel) return fallback;
-  const p = panel as unknown as { width?: number; _width?: number };
+  const panelAPI = panel.api;
+  const p = panelAPI as unknown as { width?: number; _width?: number };
   return p.width ?? p._width ?? fallback;
 }
 
@@ -263,8 +264,8 @@ export default function App() {
 
     rebuildLayout(api);
 
-    // Init Explorer size → 300
-    setPanelWidth(api, "explorer", 300);
+    // Init Explorer size → 250
+    setPanelWidth(api, "explorer", 250);
 
     // Init Controller size → 300
     setPanelWidth(api, "controller", 300);
