@@ -10,7 +10,7 @@ import "./App.css";
 // Panel components
 // ─────────────────────────────────────────────
 
-const addExplorerPanel = (api: DockviewApi) => {
+const showExplorerPanel = (api: DockviewApi) => {
   api.addPanel({
     id: "explorer",
     component: "explorer",
@@ -18,7 +18,7 @@ const addExplorerPanel = (api: DockviewApi) => {
   });
 }
 
-const addControllerGroupPanel = (api: DockviewApi) => {
+const showControllerGroupPanel = (api: DockviewApi) => {
   api.addPanel({
     id: "controllergroup",
     component: "controllergroup",
@@ -27,7 +27,14 @@ const addControllerGroupPanel = (api: DockviewApi) => {
   });
 }
 
-const addMultiTreePanel = (api: DockviewApi) => {
+const hideControllerGroupPanel = (api: DockviewApi) => {
+  const panel = api.panels.find((p: IDockviewPanel) => p.id === "controllergroup");
+  if (panel) {
+    api.removePanel(panel)
+  };
+}
+
+const showMultiTreePanel = (api: DockviewApi) => {
   api.addPanel({
     id: "multitree",
     component: "multitree",
@@ -36,7 +43,12 @@ const addMultiTreePanel = (api: DockviewApi) => {
   });
 }
 
-const addView3DPanel = (api: DockviewApi) => {
+const hideMultiTreePanel = (api: DockviewApi) => {
+  const panel = api.panels.find((p: IDockviewPanel) => p.id === "multitree");
+  if (panel) api.removePanel(panel);
+}
+
+const showView3DPanel = (api: DockviewApi) => {
   api.addPanel({
     id: "view3d",
     component: "view3d",
@@ -66,10 +78,9 @@ const ExplorerPanel = () => {
     if (!api) return;
 
     if (dockviewStore.showController) {
-      const panel = api.panels.find((p: IDockviewPanel) => p.id === "controllergroup");
-      if (panel) api.removePanel(panel);
+      hideControllerGroupPanel(api);
     } else {
-      addControllerGroupPanel(api);
+      showControllerGroupPanel(api);
     }
     dockviewStore.setShowController(!dockviewStore.showController);
   };
@@ -79,10 +90,9 @@ const ExplorerPanel = () => {
     if (!api) return;
 
     if (dockviewStore.showMultiTree) {
-      const panel = api.panels.find((p: IDockviewPanel) => p.id === "multitree");
-      if (panel) api.removePanel(panel);
+      hideMultiTreePanel(api);
     } else {
-      addMultiTreePanel(api);
+      showMultiTreePanel(api);
     }
     dockviewStore.setShowMultiTree(!dockviewStore.showMultiTree);
   };
@@ -203,17 +213,17 @@ export default function App() {
     dockviewStore.api = api;
 
     // Explorer
-    addExplorerPanel(api);
+    showExplorerPanel(api);
 
     // ControllerGroup
-    addControllerGroupPanel(api);
+    showControllerGroupPanel(api);
 
     // Multi Tree
     // hidden on startup
-    // addMultiTreePanel(api);
+    // showMultiTreePanel(api);
 
     // 3D View
-    addView3DPanel(api);
+    showView3DPanel(api);
 
     // Resize Explorer → 300
     const explorerPanel = api.panels.find((p: IDockviewPanel) => p.id === "controllergroup");
