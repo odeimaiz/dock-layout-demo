@@ -238,6 +238,11 @@ export default function App() {
     if (view3DPanel) {
       view3DPanel.group.header.hidden = true;
     }
+
+    // Lock all panels so they can't accept "within" (tab) drops
+    api.panels.forEach((p: IDockviewPanel) => {
+      p.group.locked = true;
+    });
   };
 
   return (
