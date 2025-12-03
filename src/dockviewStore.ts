@@ -23,11 +23,11 @@ export const dockviewStore = {
 
   setShowController(value: boolean) {
     this.showController = value;
-    this.notify(); // 🔥 cause ExplorerPanel to update
+    this.notify(); // cause ExplorerPanel to update
   },
 
   setShowMultiTree(value: boolean) {
     this.showMultiTree = value;
-    this.notify(); // 🔥 cause ExplorerPanel to update
+    this.notify(); // cause ExplorerPanel to update
   },
 };
