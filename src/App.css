@@ -35,3 +35,37 @@
     background: #007acc;
     border-color: #007acc;
 }
+
+/* Make the title take the whole width */
+/* Remove the draggable void zone (we still have drag on the header) */
+.dv-single-tab .dv-void-container {
+    display: none !important;
+}
+/* Remove right-side empty action zone */
+.dv-single-tab .dv-right-actions-container {
+    display: none !important;
+}
+/* Remove left-side action zone too (it takes space) */
+.dv-single-tab .dv-left-actions-container {
+    display: none !important;
+}
+/* Now we make the scrollable area take full width */
+.dv-single-tab .dv-scrollable {
+    flex: 1 !important;
+    width: 100% !important;
+}
+/* And stretch the tab to full width */
+.dv-single-tab .dv-tabs-container {
+    flex: 1 !important;
+    width: 100% !important;
+}
+.dv-single-tab .dv-tab {
+    flex: 1 !important;
+    width: 100% !important;
+}
+.dv-single-tab .dv-default-tab {
+    flex: 1 !important;
+    width: 100% !important;
+    display: flex !important;
+}
+
