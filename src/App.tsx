@@ -5,7 +5,11 @@ import "dockview-react/dist/styles/dockview.css";
 import { dockviewStore } from "./dockviewStore";
 import "./App.css";
 
+let isRebuilding = false;
+
 function rebuildLayout(api: DockviewApi) {
+  isRebuilding = true;
+
   // Remove everything
   api.panels.forEach(p => api.removePanel(p));
 
@@ -71,6 +75,8 @@ function rebuildLayout(api: DockviewApi) {
   api.panels.forEach((p: IDockviewPanel) => {
     p.group.locked = true;
   });
+
+  isRebuilding = false;
 }
 
 const ExplorerPanel: React.FC<IDockviewPanelProps> = () => {
@@ -183,6 +189,20 @@ export default function App() {
   const onReady = (event: DockviewReadyEvent) => {
     const api = event.api;
     dockviewStore.api = api;
+
+    api.onDidRemovePanel((panel) => {
+      if (isRebuilding) return; // ignore events during rebuild
+
+      const id = panel.id;
+      if (id === "controller") {
+        dockviewStore.setShowController(false); // update toggle
+        rebuildLayout(api); // hide Options too
+      }
+      if (id === "multitree") {
+        dockviewStore.setShowMultiTree(false); // update toggle
+        rebuildLayout(api);
+      }
+    });
 
     rebuildLayout(api);
 
