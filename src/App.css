@@ -11,12 +11,28 @@
     user-select: none;
 }
 
-.explorer-buttons {
+.mode-btn {
+  background: #444;
+  color: white;
+  border: 1px solid #666;
+  padding: 2px 6px;
+  margin-right: 6px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.mode-btn.active {
+  background: #1976d2; /* blue highlight */
+  border-color: #1976d2;
+}
+
+.panel-buttons {
     display: flex;
     gap: 6px;
 }
 
-.explorer-toggle {
+.panel-toggle-btn {
     padding: 4px 8px;
     font-size: 12px;
     border-radius: 4px;
@@ -27,11 +43,11 @@
     transition: background 0.15s ease;
 }
 
-.explorer-toggle:hover {
+.panel-toggle-btn:hover {
     background: #505050;
 }
 
-.explorer-toggle.active {
+.panel-toggle-btn.active {
     background: #007acc;
     border-color: #007acc;
 }

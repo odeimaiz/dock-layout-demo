@@ -1,33 +1,43 @@
 import type { DockviewApi } from "dockview-react";
 
-type Subscriber = () => void;
+class DockviewStore {
+  listeners = new Set<() => void>();
 
-export const dockviewStore = {
-  api: null as DockviewApi | null,
+  // Dockview API reference (set in onReady)
+  api: DockviewApi | null = null;
 
-  showController: true,
-  showMultiTree: false,
+  showController = true;
+  showMultiTree = false;
 
-  subscribers: [] as Subscriber[],
+  // NEW: App mode state
+  appMode: "model" | "simulation" | "postpro" = "model";
 
-  subscribe(fn: Subscriber) {
-    this.subscribers.push(fn);
+  setShowController(v: boolean) {
+    this.showController = v;
+    this.emit();
+  }
+
+  setShowMultiTree(v: boolean) {
+    this.showMultiTree = v;
+    this.emit();
+  }
+
+  // NEW: setMode
+  setAppMode(v: "model" | "simulation" | "postpro") {
+    this.appMode = v;
+    this.emit();
+  }
+
+  subscribe(fn: () => void): () => void {
+    this.listeners.add(fn);
     return () => {
-      this.subscribers = this.subscribers.filter((s) => s !== fn);
+      this.listeners.delete(fn);
     };
-  },
+  }
 
-  notify() {
-    this.subscribers.forEach((fn) => fn());
-  },
+  emit() {
+    for (const fn of this.listeners) fn();
+  }
+}
 
-  setShowController(value: boolean) {
-    this.showController = value;
-    this.notify(); // cause ExplorerPanel to update
-  },
-
-  setShowMultiTree(value: boolean) {
-    this.showMultiTree = value;
-    this.notify(); // cause ExplorerPanel to update
-  },
-};
+export const dockviewStore = new DockviewStore();

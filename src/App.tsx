@@ -85,11 +85,10 @@ const ExplorerPanel: React.FC<IDockviewPanelProps> = () => {
   const [, setVersion] = useState(0);
 
   useEffect(() => {
-    const unsubscribe = dockviewStore.subscribe(() => {
-      setVersion(v => v + 1); // re-render ExplorerPanel
+    const unsub = dockviewStore.subscribe(() => {
+      setVersion(v => v + 1);
     });
-
-    return unsubscribe;
+    return unsub;
   }, []);
 
   const toggleController = () => {
@@ -105,31 +104,53 @@ const ExplorerPanel: React.FC<IDockviewPanelProps> = () => {
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column", color: "white" }}>
       
-      {/* Header */}
       <div className="explorer-header">
-        <div>Explorer</div>
-
-        <div className="explorer-buttons">
-
+        <div className="explorer-header-left">
           <button
             className={
-              "explorer-toggle" + (dockviewStore.showController ? " active" : "")
+              "mode-btn" + (dockviewStore.appMode === "model" ? " active" : "")
+            }
+            onClick={() => dockviewStore.setAppMode("model")}
+          >
+            M
+          </button>
+          <button
+            className={
+              "mode-btn" + (dockviewStore.appMode === "simulation" ? " active" : "")
+            }
+            onClick={() => dockviewStore.setAppMode("simulation")}
+          >
+            S
+          </button>
+          <button
+            className={
+              "mode-btn" + (dockviewStore.appMode === "postpro" ? " active" : "")
+            }
+            onClick={() => dockviewStore.setAppMode("postpro")}
+          >
+            P
+          </button>
+        </div>
+
+        <div className="panel-buttons">
+          <button
+            className={
+              "panel-toggle-btn" + (dockviewStore.showController ? " active" : "")
             }
             onClick={toggleController}
           >
             Ctrls
           </button>
-
           <button
             className={
-              "explorer-toggle" + (dockviewStore.showMultiTree ? " active" : "")
+              "panel-toggle-btn" + (dockviewStore.showMultiTree ? " active" : "")
             }
             onClick={toggleMultiTree}
           >
             Tree
           </button>
-
         </div>
+
       </div>
 
       <div style={{ padding: 10, overflow: "auto" }}>
@@ -187,6 +208,15 @@ const components: Record<string, React.FC<IDockviewPanelProps>> = {
 
 
 export default function App() {
+  const [, setVersion] = useState(0);
+
+  useEffect(() => {
+    const unsub = dockviewStore.subscribe(() => {
+      setVersion(v => v + 1);
+    });
+    return unsub;
+  }, []);
+
   const onReady = (event: DockviewReadyEvent) => {
     const api = event.api;
     dockviewStore.api = api;
@@ -243,7 +273,13 @@ export default function App() {
           borderBottom: "1px solid #333",
         }}
       >
-        Navbar
+        {
+          {
+            model: "Model",
+            simulation: "Simulation",
+            postpro: "Post Processing",
+          }[dockviewStore.appMode]
+        }
       </div>
 
       <div style={{ flex: 1, minHeight: 0 }}>
