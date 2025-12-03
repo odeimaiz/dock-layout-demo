@@ -16,6 +16,7 @@ function rebuildLayout(api: DockviewApi) {
   api.addPanel({
     id: "explorer",
     component: "explorer",
+    tabComponent: "noCloseTab",
     title: "Explorer",
   });
 
@@ -169,7 +170,7 @@ const View3DPanel: React.FC<IDockviewPanelProps> = () => (
 const tabComponents = {
   noCloseTab: (props: IDockviewPanelProps) => {
     return (
-      <div style={{ width: "100%", paddingLeft: "6px", paddingRight: "6px" }}>
+      <div style={{ width: "100%", paddingTop: "6px", paddingLeft: "0px", paddingRight: "0px" }}>
         {props.api.title}
       </div>
     );
