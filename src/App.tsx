@@ -1,14 +1,35 @@
 import { useEffect, useState } from "react";
 import { DockviewReact } from "dockview-react";
-import type { DockviewApi, DockviewReadyEvent, IDockviewPanel, IDockviewPanelProps } from "dockview-react";
+import { DockviewApi, type DockviewReadyEvent, type IDockviewPanel, type IDockviewPanelProps } from "dockview-react";
 import "dockview-react/dist/styles/dockview.css";
 import { dockviewStore } from "./dockviewStore";
 import "./App.css";
 
 let isRebuilding = false;
 
+const getPanelById = (api: DockviewApi, id: string): IDockviewPanel | undefined => {
+  return api.panels.find((p: IDockviewPanel) => p.id === id);
+};
+
+const getPanelWidth = (api: DockviewApi, panelId: string, fallback = 300): number => {
+  const panel = getPanelById(api, panelId);
+  if (!panel) return fallback;
+  const p = panel as unknown as { width?: number; _width?: number };
+  return p.width ?? p._width ?? fallback;
+}
+
+const setPanelWidth = (api: DockviewApi, panelId: string, width: number) => {
+  const panel = getPanelById(api, panelId);
+  if (!panel) return;
+  panel.group.api.setSize({ width: width });
+}
+
 function rebuildLayout(api: DockviewApi) {
   isRebuilding = true;
+
+  const explorerWidth = getPanelWidth(api, "explorer");
+  const controllerWidth = getPanelWidth(api, "controller");
+  const multiTreeWidth = getPanelWidth(api, "multitree");
 
   // Remove everything
   api.panels.forEach(p => api.removePanel(p));
@@ -71,6 +92,11 @@ function rebuildLayout(api: DockviewApi) {
       }
     });
   }
+
+  // Preserve widths
+  setPanelWidth(api, "explorer", explorerWidth);
+  setPanelWidth(api, "controller", controllerWidth);
+  setPanelWidth(api, "multitree", multiTreeWidth);
 
   // Lock all panels so they can't accept "within" (tab) drops
   api.panels.forEach((p: IDockviewPanel) => {
@@ -237,19 +263,11 @@ export default function App() {
 
     rebuildLayout(api);
 
-    // Resize Explorer → 300
-    const explorerPanel = api.panels.find((p: IDockviewPanel) => p.id === "explorer");
-    if (explorerPanel) explorerPanel.group.api.setSize({ width: 300 });
+    // Init Explorer size → 300
+    setPanelWidth(api, "explorer", 300);
 
-    // Resize Controller → 300
-    const controllerPanel = api.panels.find((p: IDockviewPanel) => p.id === "controller");
-    if (controllerPanel) controllerPanel.group.api.setSize({ width: 300 });
-
-    // Hide header 3D View's caption bar
-    const view3DPanel = api.panels.find((p: IDockviewPanel) => p.id === "view3d");
-    if (view3DPanel) {
-      view3DPanel.group.header.hidden = true;
-    }
+    // Init Controller size → 300
+    setPanelWidth(api, "controller", 300);
   };
 
   return (
