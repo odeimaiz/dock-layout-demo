@@ -58,15 +58,13 @@ function rebuildLayout(api: DockviewApi) {
     api.addPanel({
       id: "options",
       component: "options",
+      tabComponent: "noCloseTab",
       title: "Options",
       position: {
         referencePanel: "controller",
         direction: "below"
       }
     });
-    // options.api.setCanClose(false);
-    // options.api.setCanMove(false);
-    // options.api.setCanFloat(false);
   }
 
   // Lock all panels so they can't accept "within" (tab) drops
@@ -162,6 +160,16 @@ const View3DPanel: React.FC<IDockviewPanelProps> = () => (
   </div>
 );
 
+const tabComponents = {
+  noCloseTab: (props: IDockviewPanelProps) => {
+    return (
+      <div style={{ width: "100%", paddingLeft: "6px", paddingRight: "6px" }}>
+        {props.api.title}
+      </div>
+    );
+  },
+};
+
 const components: Record<string, React.FC<IDockviewPanelProps>> = {
   explorer: ExplorerPanel,
   controller: ControllerPanel,
@@ -220,6 +228,7 @@ export default function App() {
       <div style={{ flex: 1, minHeight: 0 }}>
         <DockviewReact
           components={components}
+          tabComponents={tabComponents}
           onReady={onReady}
           className="dockview-theme-dark"
         />
