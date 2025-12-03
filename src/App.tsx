@@ -178,13 +178,13 @@ const OptionsPanel: React.FC<IDockviewPanelProps> = () => {
 
 const MultiTreePanel: React.FC<IDockviewPanelProps> = () => (
   <div style={{ padding: 10, color: "white" }}>
-    This is Multi Tree content
+    Multi Tree content...
   </div>
 );
 
 const View3DPanel: React.FC<IDockviewPanelProps> = () => (
   <div style={{ padding: 10, height: "100%", background: "#111", color: "white" }}>
-    This is where the 3D scene will go.
+    3D scene
   </div>
 );
 
