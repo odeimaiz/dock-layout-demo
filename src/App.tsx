@@ -6,11 +6,7 @@ import { dockviewStore } from "./dockviewStore";
 import "./App.css";
 
 
-// ─────────────────────────────────────────────
-// Panel components
-// ─────────────────────────────────────────────
-
-const showExplorerPanel = (api: DockviewApi) => {
+const initExplorerPanel = (api: DockviewApi) => {
   api.addPanel({
     id: "explorer",
     component: "explorer",
@@ -18,83 +14,131 @@ const showExplorerPanel = (api: DockviewApi) => {
   });
 }
 
-const showControllerGroupPanel = (api: DockviewApi) => {
+const initControllerPanel = (api: DockviewApi) => {
   api.addPanel({
-    id: "controllergroup",
-    component: "controllergroup",
+    id: "controller",
+    component: "controller",
     title: "Controller",
     position: { referencePanel: "explorer", direction: "right" }
   });
 }
 
-const hideControllerGroupPanel = (api: DockviewApi) => {
-  const panel = api.panels.find((p: IDockviewPanel) => p.id === "controllergroup");
-  if (panel) {
-    api.removePanel(panel)
-  };
+const initOptionsPanel = (api: DockviewApi) => {
+  api.addPanel({
+    id: "options",
+    component: "options",
+    title: "Options",
+    position: { referencePanel: "controller", direction: "below" }
+  });
 }
 
-const showMultiTreePanel = (api: DockviewApi) => {
+const initMultiTreePanel = (api: DockviewApi) => {
   api.addPanel({
     id: "multitree",
     component: "multitree",
     title: "Multi Tree",
-    position: { referencePanel: "controllergroup", direction: "right" }
+    position: { referencePanel: "controller", direction: "right" }
   });
 }
 
-const hideMultiTreePanel = (api: DockviewApi) => {
-  const panel = api.panels.find((p: IDockviewPanel) => p.id === "multitree");
-  if (panel) api.removePanel(panel);
-}
-
-const showView3DPanel = (api: DockviewApi) => {
+const initView3DPanel = (api: DockviewApi) => {
   api.addPanel({
     id: "view3d",
     component: "view3d",
     title: "3D View",
     position: {
-      // referencePanel: "multitree",
-      referencePanel: "controllergroup",
+      referencePanel: "multitree",
       direction: "right",
     },
   });
 }
 
-const ExplorerPanel = () => {
+function rebuildLayout(api: DockviewApi) {
+  // Remove everything except Explorer
+  api.panels.forEach(p => {
+    if (p.id !== "explorer") api.removePanel(p);
+  });
+
+  let lastRight = "explorer"; // track where next panel attaches
+
+  if (dockviewStore.showController) {
+    api.addPanel({
+      id: "controller",
+      component: "controller",
+      title: "Controller",
+      position: {
+        referencePanel: lastRight,
+        direction: "right"
+      }
+    });
+    lastRight = "controller";
+  }
+
+  if (dockviewStore.showMultiTree) {
+    api.addPanel({
+      id: "multitree",
+      component: "multitree",
+      title: "Multi Tree",
+      position: {
+        referencePanel: lastRight,
+        direction: "right"
+      }
+    });
+    lastRight = "multitree";
+  }
+
+  const view3d = api.addPanel({
+    id: "view3d",
+    component: "view3d",
+    title: "3D View",
+    position: {
+      referencePanel: lastRight,
+      direction: "right"
+    }
+  });
+  view3d.group.header.hidden = true;
+
+  if (dockviewStore.showController) {
+    api.addPanel({
+      id: "options",
+      component: "options",
+      title: "Options",
+      position: {
+        referencePanel: "controller",
+        direction: "below"
+      }
+    });
+    // options.api.setCanClose(false);
+    // options.api.setCanMove(false);
+    // options.api.setCanFloat(false);
+  }
+
+  // Lock all panels so they can't accept "within" (tab) drops
+  api.panels.forEach((p: IDockviewPanel) => {
+    p.group.locked = true;
+  });
+}
+
+const ExplorerPanel: React.FC<IDockviewPanelProps> = () => {
   // Local “tick” just to force React to re-render
   const [, setVersion] = useState(0);
 
   useEffect(() => {
     const unsubscribe = dockviewStore.subscribe(() => {
-      setVersion(v => v + 1); // 🔥 re-render ExplorerPanel
+      setVersion(v => v + 1); // re-render ExplorerPanel
     });
 
     return unsubscribe;
   }, []);
 
   const toggleController = () => {
-    const api = dockviewStore.api;
-    if (!api) return;
-
-    if (dockviewStore.showController) {
-      hideControllerGroupPanel(api);
-    } else {
-      showControllerGroupPanel(api);
-    }
     dockviewStore.setShowController(!dockviewStore.showController);
+    rebuildLayout(dockviewStore.api!);
   };
 
   const toggleMultiTree = () => {
-    const api = dockviewStore.api;
-    if (!api) return;
-
-    if (dockviewStore.showMultiTree) {
-      hideMultiTreePanel(api);
-    } else {
-      showMultiTreePanel(api);
-    }
     dockviewStore.setShowMultiTree(!dockviewStore.showMultiTree);
+    rebuildLayout(dockviewStore.api!);
   };
 
   return (
@@ -127,110 +171,69 @@ const ExplorerPanel = () => {
         </div>
       </div>
 
-      {/* Body */}
       <div style={{ padding: 10, overflow: "auto" }}>
-        {/* Optional: folder tree or content here */}
+        <p>Explorer content...</p>
       </div>
     </div>
   );
 };
 
-const ControllerGroupPanel = () => {
-  const [topHeight, setTopHeight] = useState(150);
-  const [dragging, setDragging] = useState(false);
-
-  const onMouseDown = () => setDragging(true);
-
-  const onMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!dragging) return;
-    const newHeight = Math.max(80, Math.min(200, e.clientY - 70)); 
-    setTopHeight(newHeight);
-  };
-
-  const onMouseUp = () => setDragging(false);
-
+const ControllerPanel: React.FC<IDockviewPanelProps> = () => {
   return (
-    <div
-      style={{
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        color: "white",
-      }}
-      onMouseMove={onMouseMove}
-      onMouseUp={onMouseUp}
-    >
-      <div style={{ height: topHeight, padding: 10 }}>
-        <h3>Controller</h3>
-        <p>Controller area</p>
-      </div>
-
-      <div
-        onMouseDown={onMouseDown}
-        style={{
-          height: 6,
-          background: "#555",
-          cursor: "row-resize",
-          userSelect: "none",
-        }}
-      />
-
-      <div style={{ flex: 1, padding: 10 }}>
-        <h3>Options</h3>
-        <p>Options area</p>
-      </div>
+    <div style={{ padding: 10, color: "white" }}>
+      <p>Controller content...</p>
     </div>
   );
 };
 
-const MultiTree = () => (
+const OptionsPanel: React.FC<IDockviewPanelProps> = () => {
+  return (
+    <div style={{ padding: 10, color: "white" }}>
+      <p>Options content...</p>
+    </div>
+  );
+};
+
+const MultiTreePanel: React.FC<IDockviewPanelProps> = () => (
   <div style={{ padding: 10, color: "white" }}>
     <p>This is Multi Tree content</p>
   </div>
 );
 
-const View3DPanel = () => (
+const View3DPanel: React.FC<IDockviewPanelProps> = () => (
   <div style={{ padding: 10, height: "100%", background: "#111", color: "white" }}>
-    <h3>3D View</h3>
     <p>This is where the 3D scene will go.</p>
   </div>
 );
 
 const components: Record<string, React.FC<IDockviewPanelProps>> = {
   explorer: ExplorerPanel,
-  controllergroup: ControllerGroupPanel,
-  multitree: MultiTree,
+  controller: ControllerPanel,
+  options: OptionsPanel,
+  multitree: MultiTreePanel,
   view3d: View3DPanel,
 };
 
-// ─────────────────────────────────────────────
-// Main App
-// ─────────────────────────────────────────────
 
 export default function App() {
   const onReady = (event: DockviewReadyEvent) => {
     const api = event.api;
     dockviewStore.api = api;
 
-    // Explorer
-    showExplorerPanel(api);
+    initExplorerPanel(api);
+    initControllerPanel(api);
+    initMultiTreePanel(api);
+    initView3DPanel(api);
+    initOptionsPanel(api);
 
-    // ControllerGroup
-    showControllerGroupPanel(api);
-
-    // Multi Tree
-    // hidden on startup
-    // showMultiTreePanel(api);
-
-    // 3D View
-    showView3DPanel(api);
+    rebuildLayout(api);
 
     // Resize Explorer → 300
-    const explorerPanel = api.panels.find((p: IDockviewPanel) => p.id === "controllergroup");
+    const explorerPanel = api.panels.find((p: IDockviewPanel) => p.id === "explorer");
     if (explorerPanel) explorerPanel.group.api.setSize({ width: 300 });
 
     // Resize Controller → 300
-    const controllerPanel = api.panels.find((p: IDockviewPanel) => p.id === "controllergroup");
+    const controllerPanel = api.panels.find((p: IDockviewPanel) => p.id === "controller");
     if (controllerPanel) controllerPanel.group.api.setSize({ width: 300 });
 
     // Hide header 3D View's caption bar
@@ -238,11 +241,6 @@ export default function App() {
     if (view3DPanel) {
       view3DPanel.group.header.hidden = true;
     }
-
-    // Lock all panels so they can't accept "within" (tab) drops
-    api.panels.forEach((p: IDockviewPanel) => {
-      p.group.locked = true;
-    });
   };
 
   return (
