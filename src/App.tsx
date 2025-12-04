@@ -6,76 +6,74 @@ import type {
   IDockviewPanelProps,
   DockviewGroupPanel,
 } from "dockview-react";
-import "dockview-react/dist/styles/dockview.css";
-import { dockviewStore } from "./dockviewStore";
-import "./App.css";
 
-const getGroupForPanel = (api: DockviewApi, panelId: string): DockviewGroupPanel | undefined => {
+import "dockview-react/dist/styles/dockview.css";
+import "./App.css";
+import { dockviewStore } from "./dockviewStore";
+
+/* -------------------------------------------------------
+   Helpers
+---------------------------------------------------------*/
+
+const getGroupForPanel = (
+  api: DockviewApi,
+  panelId: string
+): DockviewGroupPanel | undefined => {
   return api.groups.find((g) => g.panels.some((p) => p.id === panelId));
 };
 
+/* -------------------------------------------------------
+   Panels
+---------------------------------------------------------*/
 
 const ExplorerPanel: React.FC<IDockviewPanelProps> = () => {
-  // Local “tick” just to force React to re-render
   const [, setVersion] = useState(0);
 
-  useEffect(() => {
-    return dockviewStore.subscribe(() => {
-      setVersion(v => v + 1);
-    });
-  }, []);
+  useEffect(() => dockviewStore.subscribe(() => setVersion((v) => v + 1)), []);
 
   const toggleController = () => {
     const api = dockviewStore.api;
     if (!api) return;
 
-    const nextVisible = !dockviewStore.showController;
-    dockviewStore.setShowController(nextVisible);
+    const isVisible = !dockviewStore.showController;
+    dockviewStore.setShowController(isVisible);
 
-    const controllerGroup = getGroupForPanel(api, "controller");
-    const optionsGroup   = getGroupForPanel(api, "options");
+    const controller = getGroupForPanel(api, "controller");
+    const options = getGroupForPanel(api, "options");
 
-    // show/hide the whole vertical "column":
-    controllerGroup?.api.setVisible(nextVisible);
-    optionsGroup?.api.setVisible(nextVisible);
+    controller?.api.setVisible(isVisible);
+    options?.api.setVisible(isVisible);
   };
 
   const toggleMultiTree = () => {
     const api = dockviewStore.api;
     if (!api) return;
 
-    const nextVisible = !dockviewStore.showMultiTree;
-    dockviewStore.setShowMultiTree(nextVisible);
+    const isVisible = !dockviewStore.showMultiTree;
+    dockviewStore.setShowMultiTree(isVisible);
 
-    const multiTreeGroup = getGroupForPanel(api, "multitree");
-    multiTreeGroup?.api.setVisible(nextVisible);
+    const multitree = getGroupForPanel(api, "multitree");
+    multitree?.api.setVisible(isVisible);
   };
 
   return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column", color: "white" }}>
-      
+    <div className="panel-container">
       <div className="explorer-header">
         <div className="explorer-header-left">
           <button
-            className={
-              "mode-btn" + (dockviewStore.appMode === "model" ? " active" : "")
-            }
+            className={`mode-btn ${dockviewStore.appMode === "model" ? "active" : ""}`}
             onClick={() => dockviewStore.setAppMode("model")}
           >
             M
           </button>
           <button
-            className={
-              "mode-btn" + (dockviewStore.appMode === "simulation" ? " active" : "")
-            }
+            className={`mode-btn ${dockviewStore.appMode === "simulation" ? "active" : ""}`}
             onClick={() => dockviewStore.setAppMode("simulation")}
           >
             S
           </button>
           <button
-            className={
-              "mode-btn" + (dockviewStore.appMode === "postpro" ? " active" : "")
-            }
+            className={`mode-btn ${dockviewStore.appMode === "postpro" ? "active" : ""}`}
             onClick={() => dockviewStore.setAppMode("postpro")}
           >
             P
@@ -84,59 +82,86 @@ const ExplorerPanel: React.FC<IDockviewPanelProps> = () => {
 
         <div className="panel-buttons">
           <button
-            className={
-              "panel-toggle-btn" + (dockviewStore.showController ? " active" : "")
-            }
+            className={`panel-toggle-btn ${dockviewStore.showController ? "active" : ""}`}
             onClick={toggleController}
           >
             Ctrls
           </button>
           <button
-            className={
-              "panel-toggle-btn" + (dockviewStore.showMultiTree ? " active" : "")
-            }
+            className={`panel-toggle-btn ${dockviewStore.showMultiTree ? "active" : ""}`}
             onClick={toggleMultiTree}
           >
             Tree
           </button>
         </div>
-
       </div>
 
-      <div style={{ padding: 10, overflow: "auto" }}>
-        Explorer content...
-      </div>
+      <div className="panel-body">Explorer content...</div>
     </div>
   );
 };
 
-const ControllerPanel: React.FC<IDockviewPanelProps> = () => {
-  return (
-    <div style={{ padding: 10, color: "white" }}>
-      Controller content...
-    </div>
-  );
-};
+const ControllerPanel: React.FC<IDockviewPanelProps> = () => (
+  <div className="panel-body">Controller content...</div>
+);
 
-const OptionsPanel: React.FC<IDockviewPanelProps> = () => {
-  return (
-    <div style={{ padding: 10, color: "white" }}>
-      Options content...
-    </div>
-  );
-};
+const OptionsPanel: React.FC<IDockviewPanelProps> = () => (
+  <div className="panel-body">Options content...</div>
+);
 
 const MultiTreePanel: React.FC<IDockviewPanelProps> = () => (
-  <div style={{ padding: 10, color: "white" }}>
-    Multi Tree content...
-  </div>
+  <div className="panel-body">Multi Tree content...</div>
 );
 
 const View3DPanel: React.FC<IDockviewPanelProps> = () => (
-  <div style={{ padding: 10, height: "100%", background: "#111", color: "white" }}>
+  <div className="panel-body panel-3d">
     3D scene
   </div>
 );
+
+/* -------------------------------------------------------
+   Tabs (custom tabComponent)
+---------------------------------------------------------*/
+
+const tabComponents = {
+  noCloseTab: (props: IDockviewPanelProps) => (
+    <div className="no-close-tab">{props.api.title}</div>
+  ),
+
+  closableTab: (props: IDockviewPanelProps) => {
+    const api = dockviewStore.api;
+    if (!api) return null;
+
+    const group = getGroupForPanel(api, props.api.id);
+
+    const handleClose = (e: React.MouseEvent) => {
+      e.stopPropagation();
+
+      if (props.api.id === "controller" || props.api.id === "options") {
+        group?.api.setVisible(false);
+        dockviewStore.setShowController(false);
+      }
+
+      if (props.api.id === "multitree") {
+        group?.api.setVisible(false);
+        dockviewStore.setShowMultiTree(false);
+      }
+    };
+
+    return (
+      <div className="custom-tab">
+        <div className="custom-tab-title">{props.api.title}</div>
+        <div className="custom-tab-close" onClick={handleClose}>
+          ×
+        </div>
+      </div>
+    );
+  },
+};
+
+/* -------------------------------------------------------
+   Component registry
+---------------------------------------------------------*/
 
 const components: Record<string, React.FC<IDockviewPanelProps>> = {
   explorer: ExplorerPanel,
@@ -146,63 +171,18 @@ const components: Record<string, React.FC<IDockviewPanelProps>> = {
   view3d: View3DPanel,
 };
 
-const tabComponents = {
-  noCloseTab: (props: IDockviewPanelProps) => {
-    return (
-      <div style={{ width: "100%", paddingTop: "6px", paddingLeft: "0px", paddingRight: "0px" }}>
-        {props.api.title}
-      </div>
-    );
-  },
-  closableTab: (props: IDockviewPanelProps) => {
-    const api = dockviewStore.api;
-    if (!api) return null;
-
-    // find the group this tab belongs to
-    const group = api.groups.find(g => g.panels.some(p => p.id === props.api.id));
-
-    const handleClose = (e: React.MouseEvent) => {
-      e.stopPropagation(); // prevent selecting the tab
-
-      const id = props.api.id;
-
-      if (id === "controller") {
-        group?.api.setVisible(false);
-        dockviewStore.setShowController(false);
-        return;
-      }
-
-      if (id === "multitree") {
-        group?.api.setVisible(false);
-        dockviewStore.setShowMultiTree(false);
-        return;
-      }
-    };
-
-    return (
-      <div className="custom-tab">
-        <div className="custom-tab-title">{props.api.title}</div>
-        <div className="custom-tab-close" onClick={handleClose}>×</div>
-      </div>
-    );
-  },
-};
-
+/* -------------------------------------------------------
+   Main App
+---------------------------------------------------------*/
 
 export default function App() {
-  const [, setVersion] = useState(0);
-
-  useEffect(() => {
-    return dockviewStore.subscribe(() => {
-      setVersion(v => v + 1);
-    });
-  }, []);
+  const [, rerender] = useState(0);
+  useEffect(() => dockviewStore.subscribe(() => rerender((v) => v + 1)), []);
 
   const onReady = (event: DockviewReadyEvent) => {
-    const api = event.api;
-    dockviewStore.api = api;
+    const api = (dockviewStore.api = event.api);
 
-    // Basic layout, created ONCE
+    // Build layout once
     api.addPanel({
       id: "explorer",
       component: "explorer",
@@ -234,6 +214,7 @@ export default function App() {
     });
     view3d.group.header.hidden = true;
 
+    // it goes last so that it is below controller
     api.addPanel({
       id: "options",
       component: "options",
@@ -242,58 +223,31 @@ export default function App() {
       position: { referencePanel: "controller", direction: "below" },
     });
 
-    // Initial visibilities (from store defaults)
-    const controllerGroup = getGroupForPanel(api, "controller");
-    const optionsGroup    = getGroupForPanel(api, "options");
-    const multiTreeGroup  = getGroupForPanel(api, "multitree");
+    // Lock groups to prevent tabbing
+    api.groups.forEach((g) => (g.locked = true));
 
-    // e.g. default: controller visible, multitree hidden
-    controllerGroup?.api.setVisible(dockviewStore.showController);
-    optionsGroup?.api.setVisible(dockviewStore.showController);
-    multiTreeGroup?.api.setVisible(dockviewStore.showMultiTree);
+    // Width presets
+    getGroupForPanel(api, "explorer")?.api.setSize({ width: 250 });
+    getGroupForPanel(api, "controller")?.api.setSize({ width: 300 });
+    getGroupForPanel(api, "multitree")?.api.setSize({ width: 250 });
 
-    // Optional: initial widths
-    controllerGroup?.api.setSize({ width: 300 });
-    const explorerGroup = getGroupForPanel(api, "explorer");
-    explorerGroup?.api.setSize({ width: 250 });
-
-    // Lock groups so they can't be tabbed together
-    api.groups.forEach((g) => {
-      g.locked = true;
-    });
+    // Apply initial visibility
+    getGroupForPanel(api, "controller")?.api.setVisible(dockviewStore.showController);
+    getGroupForPanel(api, "options")?.api.setVisible(dockviewStore.showController);
+    getGroupForPanel(api, "multitree")?.api.setVisible(dockviewStore.showMultiTree);
   };
 
   return (
-    <div
-      style={{
-        height: "100vh",
-        width: "100vw",
-        display: "flex",
-        flexDirection: "column",
-        background: "#111",
-      }}
-    >
-      <div
-        style={{
-          height: 70,
-          background: "#1a1a1a",
-          color: "white",
-          display: "flex",
-          alignItems: "center",
-          paddingLeft: 10,
-          borderBottom: "1px solid #333",
-        }}
-      >
-        {
-          {
-            model: "Model",
-            simulation: "Simulation",
-            postpro: "Post Processing",
-          }[dockviewStore.appMode]
-        }
+    <div className="app-container">
+      <div className="navbar">
+        {{
+          model: "Model",
+          simulation: "Simulation",
+          postpro: "Post Processing",
+        }[dockviewStore.appMode]}
       </div>
 
-      <div style={{ flex: 1, minHeight: 0 }}>
+      <div className="dock-container">
         <DockviewReact
           components={components}
           tabComponents={tabComponents}
@@ -302,19 +256,7 @@ export default function App() {
         />
       </div>
 
-      <div
-        style={{
-          height: 30,
-          background: "#1a1a1a",
-          color: "white",
-          display: "flex",
-          alignItems: "center",
-          paddingLeft: 10,
-          borderTop: "1px solid #333",
-        }}
-      >
-        Footer
-      </div>
+      <div className="footer">Footer</div>
     </div>
   );
 }
