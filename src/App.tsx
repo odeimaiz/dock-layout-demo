@@ -1,107 +1,19 @@
 import { useEffect, useState } from "react";
 import { DockviewReact } from "dockview-react";
-import { DockviewApi, type DockviewReadyEvent, type IDockviewPanel, type IDockviewPanelProps } from "dockview-react";
+import type {
+  DockviewApi,
+  DockviewReadyEvent,
+  IDockviewPanelProps,
+  DockviewGroupPanel,
+} from "dockview-react";
 import "dockview-react/dist/styles/dockview.css";
 import { dockviewStore } from "./dockviewStore";
 import "./App.css";
 
-let isRebuilding = false;
+const getGroupForPanel = (api: DockviewApi, panelId: string): DockviewGroupPanel | undefined => {
+  return api.groups.find((g) => g.panels.some((p) => p.id === panelId));
+};
 
-const getPanelWidth = (api: DockviewApi, panelId: string, fallback = 250): number => {
-  const panel = api.getPanel(panelId);
-  if (!panel) return fallback;
-  const panelAPI = panel.api;
-  const p = panelAPI as unknown as { width?: number; _width?: number };
-  return p.width ?? p._width ?? fallback;
-}
-
-const setPanelWidth = (api: DockviewApi, panelId: string, width: number) => {
-  const panel = api.getPanel(panelId);
-  if (!panel) return;
-  panel.group.api.setSize({ width: width });
-}
-
-function rebuildLayout(api: DockviewApi) {
-  isRebuilding = true;
-
-  const explorerWidth = getPanelWidth(api, "explorer");
-  const controllerWidth = getPanelWidth(api, "controller");
-  const multiTreeWidth = getPanelWidth(api, "multitree");
-
-  // Remove everything
-  api.panels.forEach(p => api.removePanel(p));
-
-  api.addPanel({
-    id: "explorer",
-    component: "explorer",
-    tabComponent: "noCloseTab",
-    title: "Explorer",
-  });
-
-  let lastRight = "explorer"; // track where next panel attaches
-
-  if (dockviewStore.showController) {
-    api.addPanel({
-      id: "controller",
-      component: "controller",
-      title: "Controller",
-      position: {
-        referencePanel: lastRight,
-        direction: "right"
-      }
-    });
-    lastRight = "controller";
-  }
-
-  if (dockviewStore.showMultiTree) {
-    api.addPanel({
-      id: "multitree",
-      component: "multitree",
-      title: "Multi Tree",
-      position: {
-        referencePanel: lastRight,
-        direction: "right"
-      }
-    });
-    lastRight = "multitree";
-  }
-
-  const view3d = api.addPanel({
-    id: "view3d",
-    component: "view3d",
-    title: "3D View",
-    position: {
-      referencePanel: lastRight,
-      direction: "right"
-    }
-  });
-  view3d.group.header.hidden = true;
-
-  if (dockviewStore.showController) {
-    api.addPanel({
-      id: "options",
-      component: "options",
-      tabComponent: "noCloseTab",
-      title: "Options",
-      position: {
-        referencePanel: "controller",
-        direction: "below"
-      }
-    });
-  }
-
-  // Preserve widths
-  setPanelWidth(api, "explorer", explorerWidth);
-  setPanelWidth(api, "controller", controllerWidth);
-  setPanelWidth(api, "multitree", multiTreeWidth);
-
-  // Lock all panels so they can't accept "within" (tab) drops
-  api.panels.forEach((p: IDockviewPanel) => {
-    p.group.locked = true;
-  });
-
-  isRebuilding = false;
-}
 
 const ExplorerPanel: React.FC<IDockviewPanelProps> = () => {
   // Local “tick” just to force React to re-render
@@ -114,13 +26,29 @@ const ExplorerPanel: React.FC<IDockviewPanelProps> = () => {
   }, []);
 
   const toggleController = () => {
-    dockviewStore.setShowController(!dockviewStore.showController);
-    rebuildLayout(dockviewStore.api!);
+    const api = dockviewStore.api;
+    if (!api) return;
+
+    const nextVisible = !dockviewStore.showController;
+    dockviewStore.setShowController(nextVisible);
+
+    const controllerGroup = getGroupForPanel(api, "controller");
+    const optionsGroup   = getGroupForPanel(api, "options");
+
+    // show/hide the whole vertical "column":
+    controllerGroup?.api.setVisible(nextVisible);
+    optionsGroup?.api.setVisible(nextVisible);
   };
 
   const toggleMultiTree = () => {
-    dockviewStore.setShowMultiTree(!dockviewStore.showMultiTree);
-    rebuildLayout(dockviewStore.api!);
+    const api = dockviewStore.api;
+    if (!api) return;
+
+    const nextVisible = !dockviewStore.showMultiTree;
+    dockviewStore.setShowMultiTree(nextVisible);
+
+    const multiTreeGroup = getGroupForPanel(api, "multitree");
+    multiTreeGroup?.api.setVisible(nextVisible);
   };
 
   return (
@@ -242,27 +170,63 @@ export default function App() {
     const api = event.api;
     dockviewStore.api = api;
 
-    api.onDidRemovePanel((panel) => {
-      if (isRebuilding) return; // ignore events during rebuild
-
-      const id = panel.id;
-      if (id === "controller") {
-        dockviewStore.setShowController(false); // update toggle
-        rebuildLayout(api); // hide Options too
-      }
-      if (id === "multitree") {
-        dockviewStore.setShowMultiTree(false); // update toggle
-        rebuildLayout(api);
-      }
+    // Basic layout, created ONCE
+    api.addPanel({
+      id: "explorer",
+      component: "explorer",
+      tabComponent: "noCloseTab",
+      title: "Explorer",
     });
 
-    rebuildLayout(api);
+    api.addPanel({
+      id: "controller",
+      component: "controller",
+      title: "Controller",
+      position: { referencePanel: "explorer", direction: "right" },
+    });
 
-    // Init Explorer size → 250
-    setPanelWidth(api, "explorer", 250);
+    api.addPanel({
+      id: "multitree",
+      component: "multitree",
+      title: "Multi Tree",
+      position: { referencePanel: "controller", direction: "right" },
+    });
 
-    // Init Controller size → 300
-    setPanelWidth(api, "controller", 300);
+    const view3d = api.addPanel({
+      id: "view3d",
+      component: "view3d",
+      title: "3D View",
+      position: { referencePanel: "multitree", direction: "right" },
+    });
+    view3d.group.header.hidden = true;
+
+    api.addPanel({
+      id: "options",
+      component: "options",
+      tabComponent: "noCloseTab",
+      title: "Options",
+      position: { referencePanel: "controller", direction: "below" },
+    });
+
+    // Initial visibilities (from store defaults)
+    const controllerGroup = getGroupForPanel(api, "controller");
+    const optionsGroup    = getGroupForPanel(api, "options");
+    const multiTreeGroup  = getGroupForPanel(api, "multitree");
+
+    // e.g. default: controller visible, multitree hidden
+    controllerGroup?.api.setVisible(dockviewStore.showController);
+    optionsGroup?.api.setVisible(dockviewStore.showController);
+    multiTreeGroup?.api.setVisible(dockviewStore.showMultiTree);
+
+    // Optional: initial widths
+    controllerGroup?.api.setSize({ width: 300 });
+    const explorerGroup = getGroupForPanel(api, "explorer");
+    explorerGroup?.api.setSize({ width: 250 });
+
+    // Lock groups so they can't be tabbed together
+    api.groups.forEach((g) => {
+      g.locked = true;
+    });
   };
 
   return (
