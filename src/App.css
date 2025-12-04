@@ -52,6 +52,33 @@
     border-color: #007acc;
 }
 
+.custom-tab {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding-top: 6px;
+    padding-left: 6px;
+}
+
+.custom-tab-title {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.custom-tab-close {
+    cursor: pointer;
+    padding: 0 6px;
+    font-size: 16px;
+    color: white;
+    opacity: 0.8;
+}
+
+.custom-tab-close:hover {
+    opacity: 1;
+}
+
 /* Make the title take the whole width */
 /* Remove the draggable void zone (we still have drag on the header) */
 .dv-single-tab .dv-void-container {

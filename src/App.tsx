@@ -154,6 +154,38 @@ const tabComponents = {
       </div>
     );
   },
+  closableTab: (props: IDockviewPanelProps) => {
+    const api = dockviewStore.api;
+    if (!api) return null;
+
+    // find the group this tab belongs to
+    const group = api.groups.find(g => g.panels.some(p => p.id === props.api.id));
+
+    const handleClose = (e: React.MouseEvent) => {
+      e.stopPropagation(); // prevent selecting the tab
+
+      const id = props.api.id;
+
+      if (id === "controller") {
+        group?.api.setVisible(false);
+        dockviewStore.setShowController(false);
+        return;
+      }
+
+      if (id === "multitree") {
+        group?.api.setVisible(false);
+        dockviewStore.setShowMultiTree(false);
+        return;
+      }
+    };
+
+    return (
+      <div className="custom-tab">
+        <div className="custom-tab-title">{props.api.title}</div>
+        <div className="custom-tab-close" onClick={handleClose}>×</div>
+      </div>
+    );
+  },
 };
 
 
@@ -181,6 +213,7 @@ export default function App() {
     api.addPanel({
       id: "controller",
       component: "controller",
+      tabComponent: "closableTab",
       title: "Controller",
       position: { referencePanel: "explorer", direction: "right" },
     });
@@ -188,6 +221,7 @@ export default function App() {
     api.addPanel({
       id: "multitree",
       component: "multitree",
+      tabComponent: "closableTab",
       title: "Multi Tree",
       position: { referencePanel: "controller", direction: "right" },
     });
