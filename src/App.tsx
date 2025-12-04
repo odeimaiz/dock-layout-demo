@@ -256,7 +256,6 @@ export default function App() {
           components={components}
           tabComponents={tabComponents}
           onReady={onReady}
-          className="dockview-theme-dark"
         />
       </div>
 
