@@ -39,9 +39,9 @@ const ExplorerPanel: React.FC<IDockviewPanelProps> = () => {
     dockviewStore.setShowController(isVisible);
 
     const controller = getGroupForPanel(api, "controller");
-    const options = getGroupForPanel(api, "options");
-
     controller?.api.setVisible(isVisible);
+
+    const options = getGroupForPanel(api, "options");
     options?.api.setVisible(isVisible);
   };
 
@@ -132,18 +132,22 @@ const tabComponents = {
     const api = dockviewStore.api;
     if (!api) return null;
 
-    const group = getGroupForPanel(api, props.api.id);
+    const panelId = props.api.id;
 
     const handleClose = (e: React.MouseEvent) => {
       e.stopPropagation();
 
-      if (props.api.id === "controller" || props.api.id === "options") {
-        group?.api.setVisible(false);
+      if (panelId === "controller" || panelId === "options") {
+        const controller = getGroupForPanel(api, "controller");
+        controller?.api.setVisible(false);
+        const options = getGroupForPanel(api, "options");
+        options?.api.setVisible(false);
         dockviewStore.setShowController(false);
       }
 
       if (props.api.id === "multitree") {
-        group?.api.setVisible(false);
+        const multitree = getGroupForPanel(api, "multitree");
+        multitree?.api.setVisible(false);
         dockviewStore.setShowMultiTree(false);
       }
     };
