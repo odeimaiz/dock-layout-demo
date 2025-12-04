@@ -114,7 +114,7 @@ const MultiTreePanel: React.FC<IDockviewPanelProps> = () => (
 );
 
 const View3DPanel: React.FC<IDockviewPanelProps> = () => (
-  <div className="panel-body panel-3d">
+  <div className="panel-body">
     3D scene
   </div>
 );
