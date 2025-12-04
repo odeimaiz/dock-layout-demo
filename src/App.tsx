@@ -7,12 +7,8 @@ import "./App.css";
 
 let isRebuilding = false;
 
-const getPanelById = (api: DockviewApi, id: string): IDockviewPanel | undefined => {
-  return api.panels.find((p: IDockviewPanel) => p.id === id);
-};
-
 const getPanelWidth = (api: DockviewApi, panelId: string, fallback = 250): number => {
-  const panel = getPanelById(api, panelId);
+  const panel = api.getPanel(panelId);
   if (!panel) return fallback;
   const panelAPI = panel.api;
   const p = panelAPI as unknown as { width?: number; _width?: number };
@@ -20,7 +16,7 @@ const getPanelWidth = (api: DockviewApi, panelId: string, fallback = 250): numbe
 }
 
 const setPanelWidth = (api: DockviewApi, panelId: string, width: number) => {
-  const panel = getPanelById(api, panelId);
+  const panel = api.getPanel(panelId);
   if (!panel) return;
   panel.group.api.setSize({ width: width });
 }
@@ -214,6 +210,14 @@ const View3DPanel: React.FC<IDockviewPanelProps> = () => (
   </div>
 );
 
+const components: Record<string, React.FC<IDockviewPanelProps>> = {
+  explorer: ExplorerPanel,
+  controller: ControllerPanel,
+  options: OptionsPanel,
+  multitree: MultiTreePanel,
+  view3d: View3DPanel,
+};
+
 const tabComponents = {
   noCloseTab: (props: IDockviewPanelProps) => {
     return (
@@ -222,14 +226,6 @@ const tabComponents = {
       </div>
     );
   },
-};
-
-const components: Record<string, React.FC<IDockviewPanelProps>> = {
-  explorer: ExplorerPanel,
-  controller: ControllerPanel,
-  options: OptionsPanel,
-  multitree: MultiTreePanel,
-  view3d: View3DPanel,
 };
 
 
