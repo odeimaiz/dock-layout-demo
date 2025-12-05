@@ -1,217 +1,14 @@
-import { useEffect, useState } from "react";
-import { themeVisualStudio } from "dockview";
-import { DockviewReact } from "dockview-react";
-import type {
-  DockviewApi,
-  DockviewReadyEvent,
-  IDockviewPanelProps,
-  DockviewGroupPanel,
-} from "dockview-react";
-
+import { useState } from "react";
 import "dockview-react/dist/styles/dockview.css";
 import "./App.css";
-import { dockviewStore } from "./dockviewStore";
-import ExplorerHeader from "./ExplorerHeader"; // ⬅️ new import
 
-/* -------------------------------------------------------
-   Helpers
----------------------------------------------------------*/
-
-const getGroupForPanel = (
-  api: DockviewApi,
-  panelId: string
-): DockviewGroupPanel | undefined => {
-  return api.groups.find((g) => g.panels.some((p) => p.id === panelId));
-};
-
-/* -------------------------------------------------------
-   Panels
----------------------------------------------------------*/
-
-const ExplorerPanel: React.FC<IDockviewPanelProps> = () => {
-  const [, setVersion] = useState(0);
-
-  useEffect(() => dockviewStore.subscribe(() => setVersion((v) => v + 1)), []);
-
-  const toggleController = () => {
-    const api = dockviewStore.api;
-    if (!api) return;
-
-    const isVisible = !dockviewStore.showController;
-    dockviewStore.setShowController(isVisible);
-
-    const controller = getGroupForPanel(api, "controller");
-    controller?.api.setVisible(isVisible);
-
-    const options = getGroupForPanel(api, "options");
-    options?.api.setVisible(isVisible);
-  };
-
-  const toggleMultiTree = () => {
-    const api = dockviewStore.api;
-    if (!api) return;
-
-    const isVisible = !dockviewStore.showMultiTree;
-    dockviewStore.setShowMultiTree(isVisible);
-
-    const multitree = getGroupForPanel(api, "multitree");
-    multitree?.api.setVisible(isVisible);
-  };
-
-  return (
-    <div className="panel-container">
-      <ExplorerHeader
-        onToggleController={toggleController}
-        onToggleMultiTree={toggleMultiTree}
-      />
-      <div className="panel-body">Explorer content...</div>
-    </div>
-  );
-};
-
-const ControllerPanel: React.FC<IDockviewPanelProps> = () => (
-  <div className="panel-body">Controller content...</div>
-);
-
-const OptionsPanel: React.FC<IDockviewPanelProps> = () => (
-  <div className="panel-body">Options content...</div>
-);
-
-const MultiTreePanel: React.FC<IDockviewPanelProps> = () => (
-  <div className="panel-body">Multi Tree content...</div>
-);
-
-const View3DPanel: React.FC<IDockviewPanelProps> = () => (
-  <div className="panel-body">3D scene</div>
-);
-
-/* -------------------------------------------------------
-   Tabs (custom tabComponent)
----------------------------------------------------------*/
-
-const tabComponents = {
-  noCloseTab: (props: IDockviewPanelProps) => (
-    <div className="no-close-tab">{props.api.title}</div>
-  ),
-
-  closableTab: (props: IDockviewPanelProps) => {
-    const api = dockviewStore.api;
-    if (!api) return null;
-
-    const panelId = props.api.id;
-
-    const handleClose = (e: React.MouseEvent) => {
-      e.stopPropagation();
-
-      if (panelId === "controller" || panelId === "options") {
-        const controller = getGroupForPanel(api, "controller");
-        controller?.api.setVisible(false);
-        const options = getGroupForPanel(api, "options");
-        options?.api.setVisible(false);
-        dockviewStore.setShowController(false);
-      }
-
-      if (props.api.id === "multitree") {
-        const multitree = getGroupForPanel(api, "multitree");
-        multitree?.api.setVisible(false);
-        dockviewStore.setShowMultiTree(false);
-      }
-    };
-
-    return (
-      <div className="custom-tab">
-        <div className="custom-tab-title">{props.api.title}</div>
-        <div className="custom-tab-close" onClick={handleClose}>
-          ×
-        </div>
-      </div>
-    );
-  },
-};
-
-/* -------------------------------------------------------
-   Component registry
----------------------------------------------------------*/
-
-const components: Record<string, React.FC<IDockviewPanelProps>> = {
-  explorer: ExplorerPanel,
-  controller: ControllerPanel,
-  options: OptionsPanel,
-  multitree: MultiTreePanel,
-  view3d: View3DPanel,
-};
-
-/* -------------------------------------------------------
-   Main App
----------------------------------------------------------*/
+import { DockviewWorkspace } from "./dockview/DockviewWorkspace";
+import type { DockviewMode } from "./dockview/DockviewContext";
 
 export default function App() {
-  const [, rerender] = useState(0);
-  useEffect(() => dockviewStore.subscribe(() => rerender((v) => v + 1)), []);
-
-  const onReady = (event: DockviewReadyEvent) => {
-    const api = (dockviewStore.api = event.api);
-
-    // Build layout once
-    api.addPanel({
-      id: "explorer",
-      component: "explorer",
-      tabComponent: "noCloseTab",
-      title: "Explorer",
-    });
-
-    api.addPanel({
-      id: "controller",
-      component: "controller",
-      tabComponent: "closableTab",
-      title: "Controller",
-      position: { referencePanel: "explorer", direction: "right" },
-    });
-
-    api.addPanel({
-      id: "multitree",
-      component: "multitree",
-      tabComponent: "closableTab",
-      title: "Multi Tree",
-      position: { referencePanel: "controller", direction: "right" },
-    });
-
-    const view3d = api.addPanel({
-      id: "view3d",
-      component: "view3d",
-      title: "3D View",
-      position: { referencePanel: "multitree", direction: "right" },
-    });
-    view3d.group.header.hidden = true;
-
-    // it goes last so that it is below controller
-    api.addPanel({
-      id: "options",
-      component: "options",
-      tabComponent: "noCloseTab",
-      title: "Options",
-      position: { referencePanel: "controller", direction: "below" },
-    });
-
-    // Lock groups to prevent tabbing
-    api.groups.forEach((g) => (g.locked = true));
-
-    // Width presets
-    getGroupForPanel(api, "explorer")?.api.setSize({ width: 250 });
-    getGroupForPanel(api, "controller")?.api.setSize({ width: 300 });
-    getGroupForPanel(api, "multitree")?.api.setSize({ width: 250 });
-
-    // Apply initial visibility
-    getGroupForPanel(api, "controller")?.api.setVisible(
-      dockviewStore.showController
-    );
-    getGroupForPanel(api, "options")?.api.setVisible(
-      dockviewStore.showController
-    );
-    getGroupForPanel(api, "multitree")?.api.setVisible(
-      dockviewStore.showMultiTree
-    );
-  };
+  const [mode, setMode] = useState<DockviewMode>("model");
+  const [showController, setShowController] = useState(true);
+  const [showMultiTree, setShowMultiTree] = useState(false);
 
   return (
     <div className="app-container">
@@ -220,15 +17,17 @@ export default function App() {
           model: "Model",
           simulation: "Simulation",
           postpro: "Post Processing",
-        }[dockviewStore.appMode]}
+        }[mode]}
       </div>
 
       <div className="dock-container">
-        <DockviewReact
-          theme={themeVisualStudio}
-          components={components}
-          tabComponents={tabComponents}
-          onReady={onReady}
+        <DockviewWorkspace
+          mode={mode}
+          onModeChange={setMode}
+          showController={showController}
+          onShowControllerChange={setShowController}
+          showMultiTree={showMultiTree}
+          onShowMultiTreeChange={setShowMultiTree}
         />
       </div>
 
