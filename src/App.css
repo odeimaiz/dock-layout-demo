@@ -145,8 +145,7 @@
 
 .custom-tab-close {
     cursor: pointer;
-    padding: 0 6px;
-    font-size: 16px;
+    padding: 0 8px;
     opacity: 0.8;
 }
 
