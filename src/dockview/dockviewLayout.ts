@@ -7,6 +7,29 @@ const getGroupForPanel = (
   return api.groups.find((g) => g.panels.some((p) => p.id === panelId));
 };
 
+/**
+ * Enforce a 75% / 25% vertical split between the Controller (top)
+ * and Options (bottom) groups whenever they are both visible.
+ */
+const setControllerOptionsSplit = (api: DockviewApi): void => {
+  const controllerGroup = getGroupForPanel(api, "controller");
+  const optionsGroup = getGroupForPanel(api, "options");
+
+  if (!controllerGroup || !optionsGroup) return;
+  if (!controllerGroup.api.isVisible || !optionsGroup.api.isVisible) return;
+
+  // Use the current combined height as a baseline. If it’s 0 (e.g. first layout),
+  // just use a fallback value; only the ratio matters.
+  const totalHeight =
+    (controllerGroup.height ?? 0) + (optionsGroup.height ?? 0) || 400;
+
+  const controllerHeight = totalHeight * 0.75;
+  const optionsHeight = totalHeight - controllerHeight;
+
+  controllerGroup.api.setSize({ height: controllerHeight });
+  optionsGroup.api.setSize({ height: optionsHeight });
+};
+
 export function createInitialLayout(api: DockviewApi): void {
   // Explorer
   api.addPanel({
@@ -59,6 +82,9 @@ export function createInitialLayout(api: DockviewApi): void {
   getGroupForPanel(api, "explorer")?.api.setSize({ width: 250 });
   getGroupForPanel(api, "controller")?.api.setSize({ width: 300 });
   getGroupForPanel(api, "multitree")?.api.setSize({ width: 250 });
+
+  // Default vertical split between Controller and Options
+  setControllerOptionsSplit(api);
 }
 
 export function updateGroupVisibility(
@@ -72,4 +98,9 @@ export function updateGroupVisibility(
   controllerGroup?.api.setVisible(opts.showController);
   optionsGroup?.api.setVisible(opts.showController);
   multiTreeGroup?.api.setVisible(opts.showMultiTree);
+  
+  // Whenever Controller is visible, enforce the 75/25 split
+  if (opts.showController) {
+    setControllerOptionsSplit(api);
+  }
 }
