@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { themeVisualStudio } from "dockview";
 import { DockviewReact } from "dockview-react";
 import type {
   DockviewApi,
@@ -253,6 +254,7 @@ export default function App() {
 
       <div className="dock-container">
         <DockviewReact
+          theme={themeVisualStudio}
           components={components}
           tabComponents={tabComponents}
           onReady={onReady}
