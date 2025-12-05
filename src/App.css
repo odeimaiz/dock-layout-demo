@@ -9,12 +9,16 @@
     flex-direction: column;
 }
 
-.navbar {
-    height: 70px;
+.navbar,
+.footer {
     display: flex;
     align-items: center;
     padding-left: 10px;
-    border-bottom: 1px solid #000;
+}
+
+.navbar {
+    height: 70px;
+    border-bottom: 1px solid #3f3f46;
 }
 
 .dock-container {
@@ -24,10 +28,7 @@
 
 .footer {
     height: 30px;
-    display: flex;
-    align-items: center;
-    padding-left: 10px;
-    border-top: 1px solid #000;
+    border-top: 1px solid #3f3f46;
 }
 
 
@@ -44,6 +45,11 @@
 .panel-body {
     padding: 10px;
     overflow: auto;
+}
+
+/* make panel content readable on dark VS background */
+.dockview-theme-vs .panel-body {
+    color: var(--dv-activegroup-visiblepanel-tab-color, #f3f3f3);
 }
 
 
@@ -66,41 +72,51 @@
     align-items: center;
 }
 
+/* match VS tab/header colors */
+.dockview-theme-vs .explorer-header {
+    background: var(--dv-tabs-and-actions-container-background-color, #2d2d30);
+    color: var(--dv-activegroup-visiblepanel-tab-color, #f3f3f3);
+    border-bottom: 1px solid var(--dv-separator-border, #3f3f46);
+}
 
-/* Mode toggle (M / S / P) */
 
-.mode-btn {
+/* ─────────────────────────────────────────────
+   Mode + Panel Toggle Buttons
+───────────────────────────────────────────────*/
+
+.mode-btn,
+.panel-toggle-btn {
     padding: 2px 6px;
     margin-right: 6px;
     border-radius: 4px;
     cursor: pointer;
     font-size: 12px;
+    border: 1px solid var(--dv-tab-divider-color, #3f3f46);
+    background: transparent;
+    color: var(--dv-activegroup-visiblepanel-tab-color, #f3f3f3);
 }
-
-.mode-btn.active {
-    background: #1976d2;
-}
-
-
-/* Panel toggle (Ctrls / Tree) */
 
 .panel-buttons {
     display: flex;
     gap: 6px;
 }
 
+/* a bit more padding for the panel-toggle buttons */
 .panel-toggle-btn {
     padding: 4px 8px;
-    font-size: 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background 0.15s ease;
 }
-.panel-toggle-btn:hover {
-    background: #555;
+
+/* hover + active states in line with VS theme */
+.dockview-theme-vs .mode-btn:hover,
+.dockview-theme-vs .panel-toggle-btn:hover {
+    background: var(--dv-activegroup-hiddenpanel-tab-background-color, #3a3a3d);
 }
-.panel-toggle-btn.active {
-    background: #1976d2;
+
+.dockview-theme-vs .mode-btn.active,
+.dockview-theme-vs .panel-toggle-btn.active {
+    background: var(--dv-activegroup-visiblepanel-tab-background-color, #007acc);
+    color: var(--dv-activegroup-visiblepanel-tab-color, #ffffff);
+    border-color: transparent;
 }
 
 
@@ -110,14 +126,13 @@
 
 .no-close-tab {
     width: 100%;
-    padding: 6px 0 0 6px;
+    box-sizing: border-box;
 }
 
 .custom-tab {
     display: flex;
     align-items: center;
     width: 100%;
-    padding: 6px;
     box-sizing: border-box;
 }
 
@@ -139,22 +154,31 @@
     opacity: 1;
 }
 
+/* integrate custom tabs with VS theme */
+.dockview-theme-vs .custom-tab {
+    background: transparent;
+    color: inherit;
+}
+
+.dockview-theme-vs .dv-tab.dv-active-tab {
+    background: var(--dv-activegroup-visiblepanel-tab-background-color, #007acc);
+    color: var(--dv-activegroup-visiblepanel-tab-color, #ffffff);
+}
+
 
 /* ─────────────────────────────────────────────
-   Remove default Dockview spacing
+   Dockview header spacing tweaks
 ───────────────────────────────────────────────*/
 
+/* hide unused actions in single-tab groups */
 .dv-single-tab .dv-void-container,
 .dv-single-tab .dv-right-actions-container,
 .dv-single-tab .dv-left-actions-container {
     display: none !important;
 }
 
-.dv-single-tab .dv-scrollable,
-.dv-single-tab .dv-tabs-container,
-.dv-single-tab .dv-tab,
-.dv-single-tab .dv-default-tab {
-    flex: 1 !important;
-    width: 100% !important;
-    display: flex !important;
+/* let the single tab fill the header nicely
+   without breaking Dockview's own layout */
+.dv-single-tab .dv-tab {
+    flex: 1;
 }
