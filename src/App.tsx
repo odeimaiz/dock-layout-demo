@@ -11,6 +11,7 @@ import type {
 import "dockview-react/dist/styles/dockview.css";
 import "./App.css";
 import { dockviewStore } from "./dockviewStore";
+import ExplorerHeader from "./ExplorerHeader"; // ⬅️ new import
 
 /* -------------------------------------------------------
    Helpers
@@ -59,44 +60,10 @@ const ExplorerPanel: React.FC<IDockviewPanelProps> = () => {
 
   return (
     <div className="panel-container">
-      <div className="explorer-header">
-        <div className="explorer-header-left">
-          <button
-            className={`mode-btn ${dockviewStore.appMode === "model" ? "active" : ""}`}
-            onClick={() => dockviewStore.setAppMode("model")}
-          >
-            M
-          </button>
-          <button
-            className={`mode-btn ${dockviewStore.appMode === "simulation" ? "active" : ""}`}
-            onClick={() => dockviewStore.setAppMode("simulation")}
-          >
-            S
-          </button>
-          <button
-            className={`mode-btn ${dockviewStore.appMode === "postpro" ? "active" : ""}`}
-            onClick={() => dockviewStore.setAppMode("postpro")}
-          >
-            P
-          </button>
-        </div>
-
-        <div className="panel-buttons">
-          <button
-            className={`panel-toggle-btn ${dockviewStore.showController ? "active" : ""}`}
-            onClick={toggleController}
-          >
-            Ctrls
-          </button>
-          <button
-            className={`panel-toggle-btn ${dockviewStore.showMultiTree ? "active" : ""}`}
-            onClick={toggleMultiTree}
-          >
-            Tree
-          </button>
-        </div>
-      </div>
-
+      <ExplorerHeader
+        onToggleController={toggleController}
+        onToggleMultiTree={toggleMultiTree}
+      />
       <div className="panel-body">Explorer content...</div>
     </div>
   );
@@ -115,9 +82,7 @@ const MultiTreePanel: React.FC<IDockviewPanelProps> = () => (
 );
 
 const View3DPanel: React.FC<IDockviewPanelProps> = () => (
-  <div className="panel-body">
-    3D scene
-  </div>
+  <div className="panel-body">3D scene</div>
 );
 
 /* -------------------------------------------------------
@@ -237,9 +202,15 @@ export default function App() {
     getGroupForPanel(api, "multitree")?.api.setSize({ width: 250 });
 
     // Apply initial visibility
-    getGroupForPanel(api, "controller")?.api.setVisible(dockviewStore.showController);
-    getGroupForPanel(api, "options")?.api.setVisible(dockviewStore.showController);
-    getGroupForPanel(api, "multitree")?.api.setVisible(dockviewStore.showMultiTree);
+    getGroupForPanel(api, "controller")?.api.setVisible(
+      dockviewStore.showController
+    );
+    getGroupForPanel(api, "options")?.api.setVisible(
+      dockviewStore.showController
+    );
+    getGroupForPanel(api, "multitree")?.api.setVisible(
+      dockviewStore.showMultiTree
+    );
   };
 
   return (
